@@ -1,0 +1,10 @@
+# -*- mode: org -*-
+# -*- coding: utf-8 -*-
+#+TITLE: gitlab-straw
+#+AUTHOR: Jongbin Oh
+#+EMAIL: ohyecloudy@gmail.com
+
+* gitlab-straw
+  [[https://www.gitlab.com/][gitlab]] API를 사용해 귀찮은 일을 덜어주는 [[https://slack.com/][slack]] 봇.
+** TODO 시작하기
+** TODO 기능
