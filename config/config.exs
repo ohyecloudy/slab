@@ -28,3 +28,8 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
+import_config "secret.exs"
+# secret.exs 파일에서 기대하는 설정
+#
+# config :slack, token: "slack에서 발급받은 bot access token"
