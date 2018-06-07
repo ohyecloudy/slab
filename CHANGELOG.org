@@ -1,0 +1,11 @@
+# -*- mode: org -*-
+# -*- coding: utf-8 -*-
+#+TITLE: changelog
+#+AUTHOR: Jongbin Oh
+#+EMAIL: ohyecloudy@gmail.com
+
+The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]].
+
+** Unrelease
+*** Added
+    - poor link purling

@@ -4,7 +4,43 @@
 #+AUTHOR: Jongbin Oh
 #+EMAIL: ohyecloudy@gmail.com
 
-* gitlab-straw
-  [[https://www.gitlab.com/][gitlab]] API를 사용해 귀찮은 일을 덜어주는 [[https://slack.com/][slack]] 봇.
-** TODO 시작하기
-** TODO 기능
+[[https://www.gitlab.com/][gitlab]] API를 사용해 귀찮은 일을 덜어주는 [[https://slack.com/][slack]] 봇. 외부에서 접근이 불가능한 gitlab 서버를 운영하고 있을 때, 필요한 기능을 구현했다. 봇은 외부 내부 둘 다 접근 가능한 곳에서 실행해야 한다.
+
+** 시작하기
+   #+BEGIN_EXAMPLE
+     $ git clone https://github.com/ohyecloudy/gitlab-straw.git ~/gitlab-straw
+   #+END_EXAMPLE
+
+   git clone.
+
+   #+BEGIN_EXAMPLE
+     $ cp config/_config.exs config/config.exs
+     $ emacs config/config.exs
+   #+END_EXAMPLE
+
+   =config.exs= 설정 파일 업데이트.
+
+   #+BEGIN_EXAMPLE
+     $ mix deps.get
+     $ mix run --no-halt
+   #+END_EXAMPLE
+
+   디펜던시 받고 실행
+** 기능
+*** 조금 부족한 gitlab issue preview
+    [[docs/image/poor_unfurling.png]]
+
+    gitlab issue 링크일 경우 봇이 preview를 제공한다.
+
+    #+BEGIN_SRC elixir
+      config :gitlab_straw, enable_poor_gitlab_issue_purling: true
+    #+END_SRC
+    =config/config.exs= 설정 파일에서 사용 여부를 결정할 수 있다.
+**** 조금 부족한 이유
+     [[docs/image/slack_app_unfurling.png]]
+
+     slack은 gitlab issue URL을 감지해서 preview를 제공한다.
+
+     호스팅하는 gitlab을 외부 망에서 접근할 수 없다면 slack이 제공하는 gitlab issue preview는 사용 못한다. 대신 bot이 gitlab issue preview를 메시지로 뿌려준다.
+
+     [[https://api.slack.com/docs/message-link-unfurling][Slack app unfurling]] 기능을 사용하면 URL 밑에 깔끔한 preview를 붙일 수 있지만 [[https://api.slack.com/events-api][events api]]에 응답할 수 있어야 한다. gitlab-straw 봇과 통신할 수 있는 event 웹서버를 외부에 하나 더 구축해야 한다.

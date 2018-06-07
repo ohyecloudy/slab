@@ -22,7 +22,8 @@ defmodule GitlabStraw.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:slack, "~> 0.14.0"}
+      {:slack, "~> 0.14.0"},
+      {:httpoison, "~> 1.1", override: true}
     ]
   end
 end
