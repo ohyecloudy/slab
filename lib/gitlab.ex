@@ -3,9 +3,9 @@ defmodule Gitlab do
   use HTTPoison.Base
 
   def issue(id) do
-    timeout = Keyword.get(Application.get_env(:gitlab_straw, :gitlab), :timeout_ms)
-    api_base_url = Keyword.get(Application.get_env(:gitlab_straw, :gitlab), :api_base_url)
-    access_token = Keyword.get(Application.get_env(:gitlab_straw, :gitlab), :private_token)
+    timeout = Keyword.get(Application.get_env(:slab, :gitlab), :timeout_ms)
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    access_token = Keyword.get(Application.get_env(:slab, :gitlab), :private_token)
 
     with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <-
            HTTPoison.get(

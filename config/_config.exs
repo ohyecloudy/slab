@@ -3,9 +3,9 @@
 
 use Mix.Config
 
-config :gitlab_straw, enable_poor_gitlab_issue_purling: true
+config :slab, enable_poor_gitlab_issue_purling: true
 
-config :gitlab_straw, :gitlab,
+config :slab, :gitlab,
   url: "https://gitlab.com/ohyecloudy/gitlab-straw",
   # project id는 gitlab > Settings > General > General project settings 참고
   api_base_url: "https://gitlab.com/api/v4/projects/12345678",

@@ -1,9 +1,9 @@
-defmodule GitlabStraw.MixProject do
+defmodule Slab.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :gitlab_straw,
+      app: :slab,
       version: "0.1.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
@@ -15,7 +15,7 @@ defmodule GitlabStraw.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {GitlabStraw.Application, []}
+      mod: {Slab.Application, []}
     ]
   end
 

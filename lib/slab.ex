@@ -1,6 +1,6 @@
-defmodule GitlabStraw do
+defmodule Slab do
   @moduledoc """
-  Documentation for GitlabStraw.
+  Documentation for Slab.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule GitlabStraw do
 
   ## Examples
 
-      iex> GitlabStraw.hello
+      iex> Slab.hello
       :world
 
   """

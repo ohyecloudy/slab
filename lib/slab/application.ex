@@ -1,4 +1,4 @@
-defmodule GitlabStraw.Application do
+defmodule Slab.Application do
   @moduledoc false
 
   use Application
@@ -9,7 +9,7 @@ defmodule GitlabStraw.Application do
       {SlackAdapter, []}
     ]
 
-    opts = [strategy: :one_for_one, name: GitlabStraw.Supervisor]
+    opts = [strategy: :one_for_one, name: Slab.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

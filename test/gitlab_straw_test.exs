@@ -1,8 +1,8 @@
-defmodule GitlabStrawTest do
+defmodule SlabTest do
   use ExUnit.Case
-  doctest GitlabStraw
+  doctest Slab
 
   test "greets the world" do
-    assert GitlabStraw.hello() == :world
+    assert Slab.hello() == :world
   end
 end

@@ -18,7 +18,7 @@ defmodule SlackAdapter do
   end
 
   def handle_event(message = %{type: "message"}, slack, state) do
-    issue_base_url = Keyword.get(Application.get_env(:gitlab_straw, :gitlab), :url) <> "/issues"
+    issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
 
     issue_in_message =
       with {:ok, re} <- Regex.compile(Regex.escape(issue_base_url) <> "/(?<issue>\\d+)"),
@@ -30,7 +30,7 @@ defmodule SlackAdapter do
       end
 
     cond do
-      Application.get_env(:gitlab_straw, :enable_poor_gitlab_issue_purling) && issue_in_message ->
+      Application.get_env(:slab, :enable_poor_gitlab_issue_purling) && issue_in_message ->
         Logger.info("[purling] issue id - #{issue_in_message}")
         post_gitlab_issue(Gitlab.issue(issue_in_message), message.channel)
 
@@ -78,7 +78,7 @@ defmodule SlackAdapter do
                 short: false
               }
             ],
-            footer: "gitlab-straw"
+            footer: "slab"
           },
           author
         )
