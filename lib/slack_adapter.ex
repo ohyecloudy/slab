@@ -52,14 +52,14 @@ defmodule SlackAdapter do
 
   defp post_gitlab_issue(issue, channel) do
     author =
-      if map_size(issue["assignee"]) > 0 do
+      if issue["assignee"] == nil do
+        %{author_name: "담당자 없음"}
+      else
         %{
           author_name: issue["assignee"]["name"],
           author_icon: issue["assignee"]["avatar_url"],
           author_link: issue["assignee"]["web_url"]
         }
-      else
-        %{author_name: "담당자 없음"}
       end
 
     attachments =
