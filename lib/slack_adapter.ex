@@ -29,19 +29,41 @@ defmodule SlackAdapter do
         _ -> nil
       end
 
+    mention_me =
+      with slab when not is_nil(slab) <- Keyword.get(state, :slab),
+           id <- slab.id do
+        mention = "<@#{id}>"
+        String.contains?(message.text, mention)
+      else
+        _ -> false
+      end
+
     cond do
+      # gitlab issue 풀어주는 건 mention 안해도 동작
       Application.get_env(:slab, :enable_poor_gitlab_issue_purling) && issue_in_message ->
         Logger.info("[purling] issue id - #{issue_in_message}")
         post_gitlab_issue(Gitlab.issue(issue_in_message), message.channel)
 
-      message.text == "ping" ->
-        send_message("pong", message.channel, slack)
+      mention_me ->
+        cond do
+          String.contains?(message.text, "ping") ->
+            send_message("pong", message.channel, slack)
+
+          true ->
+            nil
+        end
 
       true ->
         nil
     end
 
     {:ok, state}
+  end
+
+  def handle_event(%{type: "hello"}, slack, state) do
+    custom = %{name: slack.me.name, id: slack.me.id}
+    Logger.info("Hello - bot name(#{custom.name}), id(#{custom.id})")
+    {:ok, put_in(state[:slab], custom)}
   end
 
   def handle_event(_, _, state), do: {:ok, state}
