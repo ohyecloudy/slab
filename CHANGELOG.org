@@ -9,3 +9,4 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
 ** Unrelease
 *** Added
     - poor link purling
+    - issues 옵션으로 gitlab issue를 조회할 수 있다

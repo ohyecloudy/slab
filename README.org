@@ -46,3 +46,19 @@ slack + gitlab.
      호스팅하는 gitlab을 외부 망에서 접근할 수 없다면 slack이 제공하는 gitlab issue preview는 사용 못한다. 대신 bot이 gitlab issue preview를 메시지로 뿌려준다.
 
      [[https://api.slack.com/docs/message-link-unfurling][Slack app unfurling]] 기능을 사용하면 URL 밑에 깔끔한 preview를 붙일 수 있지만 [[https://api.slack.com/events-api][events api]]에 응답할 수 있어야 한다. slab 봇과 통신할 수 있는 event 웹서버를 외부에 하나 더 구축해야 한다.
+*** gitlab issue 조회
+    [[docs/image/issue_query.png]]
+
+    elixir map을 [[https://docs.gitlab.com/ce/api/issues.html#list-project-issues][List project issues]] Gitlab API의 query string으로 변환한다.
+
+    #+BEGIN_EXAMPLE
+      labels=foo,bar&state=opened
+    #+END_EXAMPLE
+
+    이런 query string을 사용하고 싶다면
+
+    #+BEGIN_EXAMPLE
+      @slab issues %{"labels" => "foo,bar", "state" => "opened"}
+    #+END_EXAMPLE
+
+    slack 채널에서 이렇게 입력하면 된다.

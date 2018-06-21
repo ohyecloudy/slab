@@ -29,6 +29,7 @@ defmodule SlackAdapter do
         _ -> nil
       end
 
+    # TODO[ohyecloudy] 멘션 스트링 안 바뀜. hello에서 처리해서 저장
     mention_me =
       with slab when not is_nil(slab) <- Keyword.get(state, :slab),
            id <- slab.id do
@@ -45,9 +46,39 @@ defmodule SlackAdapter do
         post_gitlab_issue(Gitlab.issue(issue_in_message), message.channel)
 
       mention_me ->
+        # TODO[ohyecloudy]: 멘션 스트링을 지움, 트림도 같이
         cond do
           String.contains?(message.text, "ping") ->
             send_message("pong", message.channel, slack)
+
+          String.contains?(message.text, "issues") ->
+            {start, length} = :binary.match(message.text, "issues")
+
+            # TODO[ohyecloudy] html 특수문자를 변환해주는 함수가 있을법 한데, 못 찾음
+            query =
+              message.text
+              |> String.slice((start + length)..-1)
+              |> String.trim()
+              |> String.replace("&gt;", ">")
+              |> String.replace("&lt;", "<")
+              |> String.replace("&nbsp;", " ")
+              |> String.replace("&amp;", "&")
+
+            Logger.info("issues query - #{query}")
+
+            attachments =
+              query
+              |> Code.eval_string()
+              |> elem(0)
+              |> Gitlab.issues()
+              |> SlackAdapter.Attachments.from_issues(:summary)
+              |> Poison.encode!()
+
+            Slack.Web.Chat.post_message(message.channel, "", %{
+              as_user: false,
+              token: Application.get_env(:slack, :token),
+              attachments: attachments
+            })
 
           true ->
             nil
@@ -73,6 +104,7 @@ defmodule SlackAdapter do
   end
 
   defp post_gitlab_issue(issue, channel) do
+    # TODO[ohyecloudy]: SlackAdapter.Attachments 모듈로 이동
     author =
       if issue["assignee"] == nil do
         %{author_name: "담당자 없음"}
