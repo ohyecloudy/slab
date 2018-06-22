@@ -64,17 +64,61 @@ defmodule SlackAdapter do
               |> String.replace("&nbsp;", " ")
               |> String.replace("&amp;", "&")
 
-            Logger.info("issues query - #{query}")
+            Logger.info("issues input text query - #{query}")
 
-            attachments =
+            query =
               query
               |> Code.eval_string()
               |> elem(0)
-              |> Gitlab.issues()
+
+            Logger.info("issues query - #{inspect(query)}")
+
+            %{headers: headers, body: body} = Gitlab.issues(query)
+
+            attachments =
+              body
               |> SlackAdapter.Attachments.from_issues(:summary)
               |> Poison.encode!()
 
-            Slack.Web.Chat.post_message(message.channel, "", %{
+            pagination_info =
+              if map_size(headers) > 0 do
+                {total, _} = Integer.parse(headers["X-Total-Pages"])
+                {cur, _} = Integer.parse(headers["X-Page"])
+
+                prev =
+                  if cur > 1 do
+                    {_, suggest_option} =
+                      Map.get_and_update(query, "page", fn x ->
+                        {x, "#{cur - 1}"}
+                      end)
+
+                    "`#{inspect(suggest_option)}`, "
+                  else
+                    ""
+                  end
+
+                next =
+                  if cur < total do
+                    {_, suggest_option} =
+                      Map.get_and_update(query, "page", fn x ->
+                        {x, "#{cur + 1}"}
+                      end)
+
+                    ", `#{inspect(suggest_option)}`"
+                  else
+                    ""
+                  end
+
+                if total > 1 do
+                  prev <> "PAGE(#{cur}/#{total})" <> next
+                else
+                  ""
+                end
+              else
+                ""
+              end
+
+            Slack.Web.Chat.post_message(message.channel, pagination_info, %{
               as_user: false,
               token: Application.get_env(:slack, :token),
               attachments: attachments

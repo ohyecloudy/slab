@@ -62,3 +62,19 @@ slack + gitlab.
     #+END_EXAMPLE
 
     slack 채널에서 이렇게 입력하면 된다.
+**** pagination 지원
+    [[docs/image/pagination_1.png]]
+
+    [[docs/image/pagination_2.png]]
+
+    20개씩 표시. 다음 페이지를 조회할 수 있는 옵션을 안내한다.
+
+    #+BEGIN_QUOTE
+    Attachment limits
+
+    Please limit your messages to contain no more than 20 attachments to provide the best user experience.
+
+    \- [[https://api.slack.com/docs/message-attachments][Attaching content and links to messages]]
+    #+END_QUOTE
+
+    slack attachments 개수 제한이 20개.

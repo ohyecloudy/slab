@@ -29,18 +29,18 @@ defmodule Gitlab do
     url = api_base_url <> "/issues?" <> URI.encode_query(query_options)
     Logger.info("issues url - #{url}")
 
-    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <-
+    with {:ok, %HTTPoison.Response{status_code: 200, headers: headers, body: body}} <-
            HTTPoison.get(
              url,
              ["Private-Token": "#{access_token}"],
              timeout: timeout
            ),
          {:ok, body} <- Poison.decode(body) do
-      body
+      %{headers: Map.new(headers), body: body}
     else
       err ->
         Logger.info("#{inspect(err)}")
-        []
+        %{headers: %{}, body: []}
     end
   end
 end

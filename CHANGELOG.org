@@ -10,3 +10,4 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
 *** Added
     - poor link purling
     - issues 옵션으로 gitlab issue를 조회할 수 있다
+    - issues 조회 시 20개가 넘어가면 결과물에서 pagination 안내
