@@ -3,31 +3,24 @@ defmodule Gitlab do
   use HTTPoison.Base
 
   def issue(id) do
-    timeout = Keyword.get(Application.get_env(:slab, :gitlab), :timeout_ms)
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
-    access_token = Keyword.get(Application.get_env(:slab, :gitlab), :private_token)
+    url = api_base_url <> "/issues/#{id}"
 
-    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <-
-           HTTPoison.get(
-             api_base_url <> "/issues/#{id}",
-             ["Private-Token": "#{access_token}"],
-             timeout: timeout
-           ),
-         {:ok, body} <- Poison.decode(body) do
-      body
-    else
-      err ->
-        Logger.info("#{inspect(err)}")
-        %{}
-    end
+    %{body: body} = get(url, %{})
+    body
   end
 
   def issues(query_options = %{}) do
-    timeout = Keyword.get(Application.get_env(:slab, :gitlab), :timeout_ms)
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
-    access_token = Keyword.get(Application.get_env(:slab, :gitlab), :private_token)
     url = api_base_url <> "/issues?" <> URI.encode_query(query_options)
     Logger.info("issues url - #{url}")
+
+    get(url)
+  end
+
+  defp get(url, default_body \\ []) do
+    timeout = Keyword.get(Application.get_env(:slab, :gitlab), :timeout_ms)
+    access_token = Keyword.get(Application.get_env(:slab, :gitlab), :private_token)
 
     with {:ok, %HTTPoison.Response{status_code: 200, headers: headers, body: body}} <-
            HTTPoison.get(
@@ -40,7 +33,7 @@ defmodule Gitlab do
     else
       err ->
         Logger.info("#{inspect(err)}")
-        %{headers: %{}, body: []}
+        %{headers: %{}, body: default_body}
     end
   end
 end
