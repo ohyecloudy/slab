@@ -38,7 +38,12 @@ defmodule SlackAdapter do
         post_gitlab_issue(Gitlab.issue(issue_in_message), message.channel)
 
       mention_me ->
-        command = normalize_test(message.text, mention_str: Keyword.get(state, :slab).mention_str)
+        Logger.info("message #{inspect(message.text)}")
+
+        command =
+          message.text
+          |> normalize_test(mention_str: Keyword.get(state, :slab).mention_str)
+          |> process_aliases
 
         cond do
           String.contains?(command, "ping") ->
@@ -197,6 +202,20 @@ defmodule SlackAdapter do
     |> String.replace("&lt;", "<")
     |> String.replace("&nbsp;", " ")
     |> String.replace("&amp;", "&")
+  end
+
+  defp process_aliases(command) do
+    ret =
+      Application.get_env(:slab, :aliases)
+      |> Enum.reduce(command, fn {k, v}, acc ->
+        String.replace(acc, Atom.to_string(k), v, global: false)
+      end)
+
+    if command != ret do
+      Logger.info("process aliases: #{command} -> #{ret}")
+    end
+
+    ret
   end
 
   defp post_gitlab_issue(issue, channel) do

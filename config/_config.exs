@@ -13,5 +13,9 @@ config :slab, :gitlab,
   private_token: "TOKEN 여기에",
   timeout_ms: 8000
 
+config :slab, :aliases,
+  열린이슈!: "issues %{\"state\" => \"opened\"}",
+  닫힌이슈!: "issues %{\"state\" => \"closed\"}"
+
 # OAuth & Permissions > Bot User OAuth Access Token
 config :slack, token: "TOKEN 여기에"

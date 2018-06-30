@@ -86,3 +86,13 @@ slack + gitlab.
     [[docs/image/commits_without_mr_2.png]]
 
     조회할 유저를 지정할 수 있다.
+*** 복잡한 명령어를 대체하는 alias
+    [[docs/image/alias.png]]
+
+    #+BEGIN_SRC elixir
+      config :slab, :aliases,
+        열린이슈!: "issues %{\"state\" => \"opened\"}",
+        닫힌이슈!: "issues %{\"state\" => \"closed\"}"
+    #+END_SRC
+
+    =config.exs= 파일에 alias를 등록할 수 있다.
