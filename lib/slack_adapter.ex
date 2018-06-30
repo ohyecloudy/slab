@@ -124,6 +124,101 @@ defmodule SlackAdapter do
               attachments: attachments
             })
 
+          String.contains?(message.text, "commits-without-mr") ->
+            {start, length} = :binary.match(message.text, "commits-without-mr")
+
+            input_options =
+              message.text
+              |> String.slice((start + length)..-1)
+              |> String.trim()
+              |> String.replace("&gt;", ">")
+              |> String.replace("&lt;", "<")
+              |> String.replace("&nbsp;", " ")
+              |> String.replace("&amp;", "&")
+
+            Logger.info("commits-without-mr input options text - #{input_options}")
+
+            {options, target_authors, _} = OptionParser.parse(OptionParser.split(input_options))
+
+            Logger.info(
+              "commits-without-mr options - #{inspect(options)}, target authors - #{
+                inspect(target_authors)
+              }"
+            )
+
+            commits =
+              with date when not is_nil(date) <- Keyword.get(options, :date),
+                   {:ok, from_date} <- Date.from_iso8601(date),
+                   to_date <- Date.add(from_date, 1) do
+                Logger.info("commits-without-mr #{inspect(from_date)} ~ #{inspect(to_date)}")
+
+                commits_query = %{
+                  "since" => Date.to_string(from_date) <> "T00:00:00.000+09:00",
+                  "until" => Date.to_string(to_date) <> "T00:00:00.000+09:00"
+                }
+
+                Gitlab.Pagination.all(commits_query, &Gitlab.commits/1)
+                |> List.flatten()
+              else
+                _ -> []
+              end
+
+            Logger.info("commits count - #{Enum.count(commits)}")
+
+            commits_without_mr =
+              commits
+              |> Enum.filter(fn %{
+                                  "id" => id,
+                                  "message" => message,
+                                  "author_name" => name,
+                                  "author_email" => email
+                                } ->
+                target_author =
+                  if Enum.empty?(target_authors) do
+                    true
+                  else
+                    String.contains?(name, target_authors) ||
+                      String.contains?(email, target_authors)
+                  end
+
+                # merge commit 정보가 따로 없어서 커밋 메시지로 제외
+                merge_commit = String.contains?(message, "See merge request")
+
+                if target_author && !merge_commit do
+                  %{body: body} = Gitlab.merge_requests(id)
+                  Enum.empty?(body)
+                else
+                  false
+                end
+              end)
+
+            Logger.info(
+              "commits count without merge requests - #{Enum.count(commits_without_mr)}"
+            )
+
+            if Enum.empty?(commits_without_mr) do
+              send_message(
+                "merge request가 없는 commit을 못 찾았습니다. 옵션(#{input_options})",
+                message.channel,
+                slack
+              )
+            else
+              commits_without_mr
+              |> Enum.chunk_every(SlackAdapter.Attachments.limit_count())
+              |> Enum.each(fn commits ->
+                attachments =
+                  commits
+                  |> SlackAdapter.Attachments.from_commits(:summary)
+                  |> Poison.encode!()
+
+                Slack.Web.Chat.post_message(message.channel, "", %{
+                  as_user: false,
+                  token: Application.get_env(:slack, :token),
+                  attachments: attachments
+                })
+              end)
+            end
+
           true ->
             nil
         end

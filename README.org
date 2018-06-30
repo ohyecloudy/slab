@@ -78,3 +78,11 @@ slack + gitlab.
     #+END_QUOTE
 
     slack attachments 개수 제한이 20개.
+*** merge request가 없는 commit 조회
+    [[docs/image/commits_without_mr_1.png]]
+
+    해당 날짜에 master 브랜치에 머지한 커밋 중 연관된 merge request가 없는 commit을 출력한다.
+
+    [[docs/image/commits_without_mr_2.png]]
+
+    조회할 유저를 지정할 수 있다.
