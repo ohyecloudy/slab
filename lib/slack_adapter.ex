@@ -49,6 +49,17 @@ defmodule SlackAdapter do
           String.contains?(command, "ping") ->
             send_message("pong", message.channel, slack)
 
+          command == "help" ->
+            Slack.Web.Chat.post_message(
+              message.channel,
+              help(),
+              %{
+                as_user: false,
+                token: Application.get_env(:slack, :token),
+                unfurl_links: false
+              }
+            )
+
           String.contains?(command, "issues") ->
             {start, length} = :binary.match(command, "issues")
 
@@ -232,5 +243,20 @@ defmodule SlackAdapter do
 
       Logger.info("[purling] success")
     end
+  end
+
+  defp help() do
+    """
+    `issues` - gitlab issue를 조회합니다. 사용할 수 있는 옵션은 https://docs.gitlab.com/ee/api/issues.html#list-issues 참고
+    ```
+    @slab issues %{"labels" => "foo,bar", "state" => "opened"}
+    ```
+
+    `commits-without-mr` - merge request가 없는 commit을 조회합니다. author 이름을 넣으면 해당 author의 commit만 조회합니다.
+    ```
+    @slab commits-without-mr --date 2018-06-27
+    @slab commits-without-mr user1 user2 --date 2018-06-27
+    ```
+    """
   end
 end

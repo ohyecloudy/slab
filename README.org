@@ -29,6 +29,11 @@ slack + gitlab.
 
    디펜던시 받고 실행
 ** 기능
+   #+BEGIN_EXAMPLE
+     @slab help
+   #+END_EXAMPLE
+
+   명령어가 궁금하면 입력.
 *** 조금 부족한 gitlab issue preview
     [[docs/image/poor_unfurling.png]]
 
