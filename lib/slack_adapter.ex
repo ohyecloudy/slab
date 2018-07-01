@@ -17,19 +17,19 @@ defmodule SlackAdapter do
     }
   end
 
-  def handle_event(message = %{type: "message"}, slack, state) do
+  def handle_event(message = %{type: "message", text: text}, slack, state) do
     issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
 
     issue_in_message =
       with {:ok, re} <- Regex.compile(Regex.escape(issue_base_url) <> "/(?<issue>\\d+)"),
-           ret when not is_nil(ret) <- Regex.named_captures(re, message.text),
+           ret when not is_nil(ret) <- Regex.named_captures(re, text),
            {num, ""} <- Integer.parse(ret["issue"]) do
         num
       else
         _ -> nil
       end
 
-    mention_me = String.contains?(message.text, Keyword.get(state, :slab).mention_str)
+    mention_me = String.contains?(text, Keyword.get(state, :slab).mention_str)
 
     cond do
       # gitlab issue 풀어주는 건 mention 안해도 동작
@@ -38,10 +38,10 @@ defmodule SlackAdapter do
         post_gitlab_issue(Gitlab.issue(issue_in_message), message.channel)
 
       mention_me ->
-        Logger.info("message #{inspect(message.text)}")
+        Logger.info("message #{inspect(text)}")
 
         command =
-          message.text
+          text
           |> normalize_test(mention_str: Keyword.get(state, :slab).mention_str)
           |> process_aliases
 
