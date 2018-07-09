@@ -86,9 +86,17 @@ slack + gitlab.
 *** merge request가 없는 commit 조회
     [[docs/image/commits_without_mr_1.png]]
 
+    #+BEGIN_EXAMPLE
+      @slab commits-without-mr --date 2018-06-27
+    #+END_EXAMPLE
+
     해당 날짜에 master 브랜치에 머지한 커밋 중 연관된 merge request가 없는 commit을 출력한다.
 
     [[docs/image/commits_without_mr_2.png]]
+
+    #+BEGIN_EXAMPLE
+      @slab commits-without-mr 오종빈 ohyecloudy --date 2018-06-27
+    #+END_EXAMPLE
 
     조회할 유저를 지정할 수 있다.
 *** 복잡한 명령어를 대체하는 alias
