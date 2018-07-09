@@ -68,21 +68,21 @@ slack + gitlab.
 
     slack 채널에서 이렇게 입력하면 된다.
 **** pagination 지원
-    [[docs/image/pagination_1.png]]
+     [[docs/image/pagination_1.png]]
 
-    [[docs/image/pagination_2.png]]
+     [[docs/image/pagination_2.png]]
 
-    20개씩 표시. 다음 페이지를 조회할 수 있는 옵션을 안내한다.
+     20개씩 표시. 다음 페이지를 조회할 수 있는 옵션을 안내한다.
 
-    #+BEGIN_QUOTE
-    Attachment limits
+     #+BEGIN_QUOTE
+     Attachment limits
 
-    Please limit your messages to contain no more than 20 attachments to provide the best user experience.
+     Please limit your messages to contain no more than 20 attachments to provide the best user experience.
 
-    \- [[https://api.slack.com/docs/message-attachments][Attaching content and links to messages]]
-    #+END_QUOTE
+     \- [[https://api.slack.com/docs/message-attachments][Attaching content and links to messages]]
+     #+END_QUOTE
 
-    slack attachments 개수 제한이 20개.
+     slack attachments 개수 제한이 20개.
 *** merge request가 없는 commit 조회
     [[docs/image/commits_without_mr_1.png]]
 
@@ -101,3 +101,11 @@ slack + gitlab.
     #+END_SRC
 
     =config.exs= 파일에 alias를 등록할 수 있다.
+*** protected branches 접근 레벨 변경
+    [[docs/image/protected_branches_1.png]]
+
+    #+BEGIN_EXAMPLE
+      @slab branch-access --branch master --level no
+    #+END_EXAMPLE
+
+    [[https://docs.gitlab.com/ee/user/project/protected_branches.html][protected branches]] 접근 레벨을 변경할 수 있다. 레벨 값으로 =no=, =developer=, =maintainer=, =admin= 문자를 사용할 수 있다.

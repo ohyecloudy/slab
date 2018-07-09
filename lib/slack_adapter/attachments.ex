@@ -57,5 +57,41 @@ defmodule SlackAdapter.Attachments do
     end)
   end
 
+  def from_protected_branches(branches) do
+    with name when not is_nil(name) <- Map.get(branches, "name"),
+         merge_levels when length(merge_levels) > 0 <-
+           Map.get(branches, "merge_access_levels", []),
+         push_levels when length(push_levels) > 0 <- Map.get(branches, "push_access_levels", []) do
+      merge_levels =
+        merge_levels
+        |> Enum.map(&Map.get(&1, "access_level_description"))
+        |> Enum.join(",")
+
+      push_levels =
+        push_levels
+        |> Enum.map(&Map.get(&1, "access_level_description"))
+        |> Enum.join(",")
+
+      [
+        %{
+          color: "#7CD197",
+          pretext: ":tada: *#{name}* 브랜치 access level 설정 성공 :tada:",
+          fields: [
+            %{
+              title: "merge 권한",
+              value: merge_levels,
+              short: true
+            },
+            %{
+              title: "push 권한",
+              value: push_levels,
+              short: true
+            }
+          ]
+        }
+      ]
+    end
+  end
+
   def limit_count, do: 20
 end

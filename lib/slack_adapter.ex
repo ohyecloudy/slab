@@ -185,6 +185,44 @@ defmodule SlackAdapter do
               end)
             end
 
+          String.contains?(command, "branch-access") ->
+            {start, length} = :binary.match(command, "branch-access")
+
+            options =
+              command
+              |> String.slice((start + length)..-1)
+              |> String.trim()
+
+            Logger.info("branch-access input options text - #{options}")
+
+            {options, _, _} = OptionParser.parse(OptionParser.split(options))
+
+            Logger.info("branch-access options - #{inspect(options)}")
+
+            with branch when not is_nil(branch) <- Keyword.get(options, :branch),
+                 level when not is_nil(level) <-
+                   Gitlab.protected_branches_access_level(Keyword.get(options, :level)) do
+              %{body: body} =
+                Gitlab.protected_branches(%{
+                  name: branch,
+                  push_access_level: "#{level}",
+                  merge_access_level: "#{level}"
+                })
+
+              Logger.info("branch-access response - #{inspect(body)}")
+
+              attachments =
+                body
+                |> SlackAdapter.Attachments.from_protected_branches()
+                |> Poison.encode!()
+
+              Slack.Web.Chat.post_message(message.channel, "", %{
+                as_user: false,
+                token: Application.get_env(:slack, :token),
+                attachments: attachments
+              })
+            end
+
           true ->
             nil
         end
@@ -256,6 +294,11 @@ defmodule SlackAdapter do
     ```
     @slab commits-without-mr --date 2018-06-27
     @slab commits-without-mr user1 user2 --date 2018-06-27
+    ```
+
+    `branch-access` - protected branches 접근 레벨을 변경합니다. 레벨 값으로 no, developer, maintainer, admin 문자를 사용할 수 있습니다.
+    ```
+    @slab branch-access --branch master --level no
     ```
     """
   end
