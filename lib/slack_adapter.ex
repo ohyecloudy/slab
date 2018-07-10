@@ -17,7 +17,7 @@ defmodule SlackAdapter do
     }
   end
 
-  def handle_event(message = %{type: "message", text: text}, slack, state) do
+  def handle_event(message = %{type: "message", text: text, user: user}, slack, state) do
     issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
 
     issue_in_message =
@@ -31,6 +31,11 @@ defmodule SlackAdapter do
 
     mention_me = String.contains?(text, Keyword.get(state, :slab).mention_str)
 
+    # @user_name에서 @ 문자를 제거
+    user_name = String.slice(Slack.Lookups.lookup_user_name(user, slack), 1..-1)
+
+    master = Enum.any?(Application.get_env(:slab, :masters), fn name -> user_name == name end)
+
     cond do
       # gitlab issue 풀어주는 건 mention 안해도 동작
       Application.get_env(:slab, :enable_poor_gitlab_issue_purling) && issue_in_message ->
@@ -38,7 +43,9 @@ defmodule SlackAdapter do
         post_gitlab_issue(Gitlab.issue(issue_in_message), message.channel)
 
       mention_me ->
-        Logger.info("message #{inspect(text)}")
+        Logger.info(
+          "message - #{inspect(text)}, user_name - #{user_name}, master - #{inspect(master)}"
+        )
 
         command =
           text
@@ -185,7 +192,7 @@ defmodule SlackAdapter do
               end)
             end
 
-          String.contains?(command, "branch-access") ->
+          String.contains?(command, "branch-access") && master ->
             {start, length} = :binary.match(command, "branch-access")
 
             options =
@@ -297,6 +304,7 @@ defmodule SlackAdapter do
     ```
 
     `branch-access` - protected branches 접근 레벨을 변경합니다. 레벨 값으로 no, developer, maintainer, admin 문자를 사용할 수 있습니다.
+    :admission_tickets: *master* 권한을 가진 유저만 실행할 수 있는 명령어 입니다.
     ```
     @slab branch-access --branch master --level no
     ```

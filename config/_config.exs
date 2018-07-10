@@ -13,6 +13,9 @@ config :slab, :gitlab,
   private_token: "TOKEN 여기에",
   timeout_ms: 8000
 
+# master 권한을 가진 slack user
+config :slab, masters: ["ohyecloudy"]
+
 config :slab, :aliases,
   열린이슈!: "issues %{\"state\" => \"opened\"}",
   닫힌이슈!: "issues %{\"state\" => \"closed\"}"

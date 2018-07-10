@@ -15,3 +15,5 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - 복잡한 명령을 대체하는 alias 지원
     - help 명령어 추가
     - branch-access 커맨드로 protected branches 접근 레벨을 변경할 수 있다
+    - config에서 설정할 수 있는 master 권한 추가
+    - branch-access 커맨드는 master 권한을 가진 유저만 실행할 수 있다

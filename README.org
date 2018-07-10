@@ -109,6 +109,12 @@ slack + gitlab.
     #+END_SRC
 
     =config.exs= 파일에 alias를 등록할 수 있다.
+*** master 권한 설정
+    #+BEGIN_SRC elixir
+      config :slab, masters: ["ohyecloudy"]
+    #+END_SRC
+
+    =config.exs= 파일에 master 권한을 추가할 수 있다. master 권한을 가진 유저만 실행할 수 있는 명령어가 존재한다. 명령어마다 권한 설정은 지원하지 않는다.
 *** protected branches 접근 레벨 변경
     [[docs/image/protected_branches_1.png]]
 
@@ -117,3 +123,5 @@ slack + gitlab.
     #+END_EXAMPLE
 
     [[https://docs.gitlab.com/ee/user/project/protected_branches.html][protected branches]] 접근 레벨을 변경할 수 있다. 레벨 값으로 =no=, =developer=, =maintainer=, =admin= 문자를 사용할 수 있다.
+
+    :admission_tickets: master 권한을 가진 유저만 실행할 수 있다.
