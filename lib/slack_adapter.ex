@@ -68,167 +68,19 @@ defmodule SlackAdapter do
             )
 
           String.contains?(command, "issues") ->
-            {start, length} = :binary.match(command, "issues")
-
-            query =
-              command
-              |> String.slice((start + length)..-1)
-              |> String.trim()
-
-            Logger.info("issues input text query - #{query}")
-
-            query =
-              query
-              |> Code.eval_string()
-              |> elem(0)
-
-            Logger.info("issues query - #{inspect(query)}")
-
-            %{headers: headers, body: body} = Gitlab.issues(query)
-
-            attachments =
-              body
-              |> SlackAdapter.Attachments.from_issues(:summary)
-              |> Poison.encode!()
-
-            Slack.Web.Chat.post_message(
-              message.channel,
-              Gitlab.Pagination.help_text(headers, query),
-              %{
-                as_user: false,
-                token: Application.get_env(:slack, :token),
-                attachments: attachments
-              }
-            )
+            command
+            |> extract_options("issues")
+            |> process_issues(message.channel)
 
           String.contains?(command, "commits-without-mr") ->
-            {start, length} = :binary.match(command, "commits-without-mr")
-
-            input_options =
-              command
-              |> String.slice((start + length)..-1)
-              |> String.trim()
-
-            Logger.info("commits-without-mr input options text - #{input_options}")
-
-            {options, target_authors, _} = OptionParser.parse(OptionParser.split(input_options))
-
-            Logger.info(
-              "commits-without-mr options - #{inspect(options)}, target authors - #{
-                inspect(target_authors)
-              }"
-            )
-
-            commits =
-              with date when not is_nil(date) <- Keyword.get(options, :date),
-                   {:ok, from_date} <- Date.from_iso8601(date),
-                   to_date <- Date.add(from_date, 1) do
-                Logger.info("commits-without-mr #{inspect(from_date)} ~ #{inspect(to_date)}")
-
-                commits_query = %{
-                  "since" => Date.to_string(from_date) <> "T00:00:00.000+09:00",
-                  "until" => Date.to_string(to_date) <> "T00:00:00.000+09:00"
-                }
-
-                Gitlab.Pagination.all(commits_query, &Gitlab.commits/1)
-                |> List.flatten()
-              else
-                _ -> []
-              end
-
-            Logger.info("commits count - #{Enum.count(commits)}")
-
-            commits_without_mr =
-              commits
-              |> Enum.filter(fn %{
-                                  "id" => id,
-                                  "message" => message,
-                                  "author_name" => name,
-                                  "author_email" => email
-                                } ->
-                target_author =
-                  if Enum.empty?(target_authors) do
-                    true
-                  else
-                    String.contains?(name, target_authors) ||
-                      String.contains?(email, target_authors)
-                  end
-
-                # merge commit 정보가 따로 없어서 커밋 메시지로 제외
-                merge_commit = String.contains?(message, "See merge request")
-
-                if target_author && !merge_commit do
-                  %{body: body} = Gitlab.merge_requests(id)
-                  Enum.empty?(body)
-                else
-                  false
-                end
-              end)
-
-            Logger.info(
-              "commits count without merge requests - #{Enum.count(commits_without_mr)}"
-            )
-
-            if Enum.empty?(commits_without_mr) do
-              send_message(
-                "merge request가 없는 commit을 못 찾았습니다. 명령(#{command})",
-                message.channel,
-                slack
-              )
-            else
-              commits_without_mr
-              |> Enum.chunk_every(SlackAdapter.Attachments.limit_count())
-              |> Enum.each(fn commits ->
-                attachments =
-                  commits
-                  |> SlackAdapter.Attachments.from_commits(:summary)
-                  |> Poison.encode!()
-
-                Slack.Web.Chat.post_message(message.channel, "", %{
-                  as_user: false,
-                  token: Application.get_env(:slack, :token),
-                  attachments: attachments
-                })
-              end)
-            end
+            command
+            |> extract_options("commits-without-mr")
+            |> process_commits_without_mr(slack, message.channel, command)
 
           String.contains?(command, "branch-access") && master ->
-            {start, length} = :binary.match(command, "branch-access")
-
-            options =
-              command
-              |> String.slice((start + length)..-1)
-              |> String.trim()
-
-            Logger.info("branch-access input options text - #{options}")
-
-            {options, _, _} = OptionParser.parse(OptionParser.split(options))
-
-            Logger.info("branch-access options - #{inspect(options)}")
-
-            with branch when not is_nil(branch) <- Keyword.get(options, :branch),
-                 level when not is_nil(level) <-
-                   Gitlab.protected_branches_access_level(Keyword.get(options, :level)) do
-              %{body: body} =
-                Gitlab.protected_branches(%{
-                  name: branch,
-                  push_access_level: "#{level}",
-                  merge_access_level: "#{level}"
-                })
-
-              Logger.info("branch-access response - #{inspect(body)}")
-
-              attachments =
-                body
-                |> SlackAdapter.Attachments.from_protected_branches()
-                |> Poison.encode!()
-
-              Slack.Web.Chat.post_message(message.channel, "", %{
-                as_user: false,
-                token: Application.get_env(:slack, :token),
-                attachments: attachments
-              })
-            end
+            command
+            |> extract_options("branch-access")
+            |> process_branch_access(message.channel)
 
           true ->
             nil
@@ -309,5 +161,155 @@ defmodule SlackAdapter do
     @slab branch-access --branch master --level no
     ```
     """
+  end
+
+  defp extract_options(full, command) do
+    {start, length} = :binary.match(full, command)
+
+    full
+    |> String.slice((start + length)..-1)
+    |> String.trim()
+  end
+
+  defp process_issues(options, channel) do
+    Logger.info("issue options before eval - #{options}")
+
+    options =
+      options
+      |> Code.eval_string()
+      |> elem(0)
+
+    Logger.info("issue options after eval - #{inspect(options)}")
+
+    %{headers: headers, body: body} = Gitlab.issues(options)
+
+    attachments =
+      body
+      |> SlackAdapter.Attachments.from_issues(:summary)
+      |> Poison.encode!()
+
+    Slack.Web.Chat.post_message(
+      channel,
+      Gitlab.Pagination.help_text(headers, options),
+      %{
+        as_user: false,
+        token: Application.get_env(:slack, :token),
+        attachments: attachments
+      }
+    )
+  end
+
+  defp process_commits_without_mr(options, slack, channel, command) do
+    Logger.info("commits-without-mr input options text - #{options}")
+
+    {options, target_authors, _} = OptionParser.parse(OptionParser.split(options))
+
+    Logger.info(
+      "commits-without-mr options - #{inspect(options)}, target authors - #{
+        inspect(target_authors)
+      }"
+    )
+
+    commits =
+      with date when not is_nil(date) <- Keyword.get(options, :date),
+           {:ok, from_date} <- Date.from_iso8601(date),
+           to_date <- Date.add(from_date, 1) do
+        Logger.info("commits-without-mr #{inspect(from_date)} ~ #{inspect(to_date)}")
+
+        commits_query = %{
+          "since" => Date.to_string(from_date) <> "T00:00:00.000+09:00",
+          "until" => Date.to_string(to_date) <> "T00:00:00.000+09:00"
+        }
+
+        Gitlab.Pagination.all(commits_query, &Gitlab.commits/1)
+        |> List.flatten()
+      else
+        _ -> []
+      end
+
+    Logger.info("commits count - #{Enum.count(commits)}")
+
+    commits_without_mr =
+      commits
+      |> Enum.filter(fn %{
+                          "id" => id,
+                          "message" => message,
+                          "author_name" => name,
+                          "author_email" => email
+                        } ->
+        target_author =
+          if Enum.empty?(target_authors) do
+            true
+          else
+            String.contains?(name, target_authors) || String.contains?(email, target_authors)
+          end
+
+        # merge commit 정보가 따로 없어서 커밋 메시지로 제외
+        merge_commit = String.contains?(message, "See merge request")
+
+        if target_author && !merge_commit do
+          %{body: body} = Gitlab.merge_requests(id)
+          Enum.empty?(body)
+        else
+          false
+        end
+      end)
+
+    Logger.info("commits count without merge requests - #{Enum.count(commits_without_mr)}")
+
+    if Enum.empty?(commits_without_mr) do
+      send_message(
+        "merge request가 없는 commit을 못 찾았습니다. 명령(#{command})",
+        channel,
+        slack
+      )
+    else
+      commits_without_mr
+      |> Enum.chunk_every(SlackAdapter.Attachments.limit_count())
+      |> Enum.each(fn commits ->
+        attachments =
+          commits
+          |> SlackAdapter.Attachments.from_commits(:summary)
+          |> Poison.encode!()
+
+        Slack.Web.Chat.post_message(channel, "", %{
+          as_user: false,
+          token: Application.get_env(:slack, :token),
+          attachments: attachments
+        })
+      end)
+    end
+  end
+
+  def process_branch_access(options, channel) do
+    Logger.info("branch-access input options text - #{options}")
+
+    {options, _, _} = OptionParser.parse(OptionParser.split(options))
+
+    Logger.info("branch-access options - #{inspect(options)}")
+
+    with branch when not is_nil(branch) <- Keyword.get(options, :branch),
+         level when not is_nil(level) <-
+           Gitlab.protected_branches_access_level(Keyword.get(options, :level)) do
+      %{body: body} =
+        Gitlab.protected_branches(%{
+          name: branch,
+          push_access_level: "#{level}",
+          merge_access_level: "#{level}"
+        })
+
+      Logger.info("branch-access response - #{inspect(body)}")
+
+      attachments =
+        body
+        |> SlackAdapter.Attachments.from_protected_branches()
+        |> Poison.encode!()
+
+      Slack.Web.Chat.post_message(channel, "", %{
+        as_user: false,
+        token: Application.get_env(:slack, :token),
+        attachments: attachments
+      })
+    end
   end
 end
