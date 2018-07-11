@@ -75,7 +75,7 @@ defmodule SlackAdapter do
           String.contains?(command, "commits-without-mr") ->
             command
             |> extract_options("commits-without-mr")
-            |> process_commits_without_mr(slack, message.channel, command)
+            |> process_commits_without_mr(slack, message.channel)
 
           String.contains?(command, "branch-access") && master ->
             command
@@ -199,7 +199,7 @@ defmodule SlackAdapter do
     )
   end
 
-  defp process_commits_without_mr(options, slack, channel, command) do
+  defp process_commits_without_mr(options, slack, channel) do
     Logger.info("commits-without-mr input options text - #{options}")
 
     {options, target_authors, _} = OptionParser.parse(OptionParser.split(options))
@@ -259,7 +259,7 @@ defmodule SlackAdapter do
 
     if Enum.empty?(commits_without_mr) do
       send_message(
-        "merge request가 없는 commit을 못 찾았습니다. 명령(#{command})",
+        "merge request가 없는 commit을 못 찾았습니다.",
         channel,
         slack
       )
