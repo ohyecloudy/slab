@@ -124,4 +124,4 @@ slack + gitlab.
 
     [[https://docs.gitlab.com/ee/user/project/protected_branches.html][protected branches]] 접근 레벨을 변경할 수 있다. 레벨 값으로 =no=, =developer=, =maintainer=, =admin= 문자를 사용할 수 있다.
 
-    :admission_tickets: master 권한을 가진 유저만 실행할 수 있다.
+    *master* 권한을 가진 유저만 실행할 수 있다.
