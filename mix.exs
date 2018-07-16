@@ -14,7 +14,7 @@ defmodule Slab.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :timex],
       mod: {Slab.Application, []}
     ]
   end
@@ -23,7 +23,8 @@ defmodule Slab.MixProject do
   defp deps do
     [
       {:slack, "~> 0.14.0"},
-      {:httpoison, "~> 1.1", override: true}
+      {:httpoison, "~> 1.1", override: true},
+      {:timex, "~> 3.3"}
     ]
   end
 end

@@ -16,6 +16,30 @@ config :slab, :gitlab,
 # master 권한을 가진 slack user
 config :slab, masters: ["ohyecloudy"]
 
+# @slab pipelines --branch <branch_name>
+# 명령으로 출력할 파이프라인 사용자 필터를 정의할 수 있다
+# 입력은 gitlab api 참고
+#   https://docs.gitlab.com/ee/api/pipelines.html#get-a-single-pipeline
+#
+# 아래는 5분 이상 걸린 파이프라인만 출력하는 예제
+# config :slab,
+#   pipeline_custom_filter: fn %{"duration" => duration, "status" => status} ->
+#     cond do
+#       status == "failed" ->
+#         true
+
+#       status == "running" ->
+#         true
+
+#       # 5분 이상 걸린 pipeline
+#       duration && duration > 300 ->
+#         true
+
+#       true ->
+#         false
+#     end
+#   end
+
 config :slab, :aliases,
   열린이슈!: "issues %{\"state\" => \"opened\"}",
   닫힌이슈!: "issues %{\"state\" => \"closed\"}"

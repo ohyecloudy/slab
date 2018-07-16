@@ -82,6 +82,11 @@ defmodule SlackAdapter do
             |> extract_options("branch-access")
             |> process_branch_access(message.channel)
 
+          String.contains?(command, "pipelines") ->
+            command
+            |> extract_options("pipelines")
+            |> process_pipelines(message.channel)
+
           true ->
             nil
         end
@@ -96,6 +101,7 @@ defmodule SlackAdapter do
   def handle_event(%{type: "hello"}, slack, state) do
     custom = %{name: slack.me.name, mention_str: "<@#{slack.me.id}>"}
     Logger.info("Hello - bot name(#{custom.name}), mention_str(#{custom.mention_str})")
+    Logger.info("local time zone - #{inspect(Timex.Timezone.local())}")
     {:ok, put_in(state[:slab], custom)}
   end
 
@@ -159,6 +165,11 @@ defmodule SlackAdapter do
     :admission_tickets: *master* 권한을 가진 유저만 실행할 수 있는 명령어 입니다.
     ```
     @slab branch-access --branch master --level no
+    ```
+
+    `pipelines` - pipeline 상태를 조회합니다.
+    ```
+    @slab pipelines --branch master
     ```
     """
   end
@@ -311,5 +322,72 @@ defmodule SlackAdapter do
         attachments: attachments
       })
     end
+  end
+
+  def process_pipelines(options, channel) do
+    {options, _, _} = OptionParser.parse(OptionParser.split(options))
+
+    Logger.info("pipelines options - #{inspect(options)}")
+
+    with branch when not is_nil(branch) <- Keyword.get(options, :branch) do
+      %{body: pipelines} = Gitlab.pipelines(%{"per_page" => "100", "ref" => "#{branch}"})
+
+      attachments =
+        pipelines
+        |> Stream.map(fn %{"id" => id} -> Gitlab.pipeline(id) end)
+        |> pipelines_custom_filter
+        |> take_until_last_suceess
+        |> pipelines_status
+        |> SlackAdapter.Attachments.from_pipelines()
+        |> Poison.encode!()
+
+      Slack.Web.Chat.post_message(channel, "", %{
+        as_user: false,
+        token: Application.get_env(:slack, :token),
+        attachments: attachments
+      })
+    end
+  end
+
+  defp pipelines_custom_filter(pipelines) do
+    filter = Application.get_env(:slab, :pipeline_custom_filter)
+
+    if filter do
+      Logger.info("process custom pipelines filter - #{inspect(filter)}")
+      Logger.info("before count - #{Enum.count(pipelines)}")
+      ret = Enum.filter(pipelines, filter)
+      Logger.info("after count - #{Enum.count(ret)}")
+      ret
+    else
+      pipelines
+    end
+  end
+
+  defp take_until_last_suceess(pipelines) do
+    idx = Enum.find_index(pipelines, fn %{"status" => status} -> status == "success" end)
+
+    if idx do
+      Enum.take(pipelines, idx + 1)
+    else
+      Enum.take(pipelines, 0)
+    end
+  end
+
+  defp pipelines_status(pipelines) do
+    success = List.last(pipelines)
+    failed = Enum.find(pipelines, fn %{"status" => status} -> status == "failed" end)
+    running = Enum.find(pipelines, fn %{"status" => status} -> status == "running" end)
+
+    %{
+      success: pipeline_commit(success),
+      failed: pipeline_commit(failed),
+      running: pipeline_commit(running)
+    }
+  end
+
+  defp pipeline_commit(nil), do: nil
+
+  defp pipeline_commit(pipeline) do
+    %{pipeline: pipeline, commit: Gitlab.commit(pipeline["sha"])}
   end
 end

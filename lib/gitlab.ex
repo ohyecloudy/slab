@@ -17,6 +17,14 @@ defmodule Gitlab do
     get(url)
   end
 
+  def commit(id) do
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    url = api_base_url <> "/repository/commits/#{id}"
+
+    %{body: body} = get(url, %{})
+    body
+  end
+
   def commits(query_options = %{}) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/repository/commits?" <> URI.encode_query(query_options)
@@ -44,6 +52,21 @@ defmodule Gitlab do
     url = api_base_url <> "/repository/commits/#{commit_id}/merge_requests"
 
     get(url)
+  end
+
+  def pipelines(query_options = %{}) do
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    url = api_base_url <> "/pipelines?" <> URI.encode_query(query_options)
+
+    get(url)
+  end
+
+  def pipeline(id) do
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    url = api_base_url <> "/pipelines/#{id}"
+
+    %{body: body} = get(url)
+    body
   end
 
   defp get(url, default_body \\ []) do
