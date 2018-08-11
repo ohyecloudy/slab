@@ -59,9 +59,8 @@ defmodule SlackAdapter.Attachments do
 
   def from_protected_branches(branches) do
     with name when not is_nil(name) <- Map.get(branches, "name"),
-         merge_levels when length(merge_levels) > 0 <-
-           Map.get(branches, "merge_access_levels", []),
-         push_levels when length(push_levels) > 0 <- Map.get(branches, "push_access_levels", []) do
+         merge_levels when merge_levels != [] <- Map.get(branches, "merge_access_levels", []),
+         push_levels when push_levels != [] <- Map.get(branches, "push_access_levels", []) do
       merge_levels =
         merge_levels
         |> Enum.map(&Map.get(&1, "access_level_description"))
