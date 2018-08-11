@@ -213,7 +213,8 @@ defmodule SlackAdapter do
   defp process_commits_without_mr(options, slack, channel) do
     Logger.info("commits-without-mr input options text - #{options}")
 
-    {options, target_authors, _} = OptionParser.parse(OptionParser.split(options))
+    {options, target_authors, _} =
+      OptionParser.parse(OptionParser.split(options), switches: [date: :string])
 
     Logger.info(
       "commits-without-mr options - #{inspect(options)}, target authors - #{
@@ -295,7 +296,8 @@ defmodule SlackAdapter do
   def process_branch_access(options, channel) do
     Logger.info("branch-access input options text - #{options}")
 
-    {options, _, _} = OptionParser.parse(OptionParser.split(options))
+    {options, _, _} =
+      OptionParser.parse(OptionParser.split(options), switches: [branch: :string, level: :string])
 
     Logger.info("branch-access options - #{inspect(options)}")
 
@@ -325,7 +327,7 @@ defmodule SlackAdapter do
   end
 
   def process_pipelines(options, channel) do
-    {options, _, _} = OptionParser.parse(OptionParser.split(options))
+    {options, _, _} = OptionParser.parse(OptionParser.split(options), switches: [branch: :string])
 
     Logger.info("pipelines options - #{inspect(options)}")
 
