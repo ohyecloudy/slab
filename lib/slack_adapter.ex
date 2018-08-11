@@ -358,10 +358,7 @@ defmodule SlackAdapter do
 
     if filter do
       Logger.info("process custom pipelines filter - #{inspect(filter)}")
-      Logger.info("before count - #{Enum.count(pipelines)}")
-      ret = Enum.filter(pipelines, filter)
-      Logger.info("after count - #{Enum.count(ret)}")
-      ret
+      Stream.filter(pipelines, filter)
     else
       pipelines
     end
