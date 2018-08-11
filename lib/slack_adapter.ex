@@ -116,6 +116,8 @@ defmodule SlackAdapter do
     |> String.replace("&lt;", "<")
     |> String.replace("&nbsp;", " ")
     |> String.replace("&amp;", "&")
+    |> String.replace("”", "\"")
+    |> String.replace("“", "\"")
   end
 
   defp process_aliases(command) do
