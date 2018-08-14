@@ -3,20 +3,6 @@ defmodule SlackAdapter.Handler do
   use Slack
   use HTTPoison.Base
 
-  def start_link(args) do
-    Slack.Bot.start_link(__MODULE__, args, Application.get_env(:slack, :token))
-  end
-
-  def child_spec(opts) do
-    %{
-      id: __MODULE__,
-      start: {__MODULE__, :start_link, [opts]},
-      type: :worker,
-      restart: :permanent,
-      shutdown: 500
-    }
-  end
-
   def handle_event(message = %{type: "message", text: text, user: user}, slack, state) do
     issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
 

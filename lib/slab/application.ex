@@ -6,7 +6,7 @@ defmodule Slab.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
-      {SlackAdapter.Handler, []}
+      {SlackAdapter, []}
     ]
 
     opts = [strategy: :one_for_one, name: Slab.Supervisor]
