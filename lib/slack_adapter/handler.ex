@@ -1,10 +1,10 @@
-defmodule SlackAdapter do
+defmodule SlackAdapter.Handler do
   require Logger
   use Slack
   use HTTPoison.Base
 
   def start_link(args) do
-    Slack.Bot.start_link(SlackAdapter, args, Application.get_env(:slack, :token))
+    Slack.Bot.start_link(__MODULE__, args, Application.get_env(:slack, :token))
   end
 
   def child_spec(opts) do
