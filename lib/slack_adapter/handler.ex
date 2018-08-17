@@ -93,6 +93,12 @@ defmodule SlackAdapter.Handler do
 
   def handle_event(_, _, state), do: {:ok, state}
 
+  def handle_info({:message, text, channel}, slack, state) do
+    send_message(text, channel, slack)
+
+    {:ok, state}
+  end
+
   defp normalize_test(text, mention_str: mention) do
     # html 특수문자를 변환해주는 함수가 있을법 한데, 못 찾음
     text

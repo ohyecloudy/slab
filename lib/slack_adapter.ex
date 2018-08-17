@@ -9,6 +9,10 @@ defmodule SlackAdapter do
     GenServer.start_link(__MODULE__, %State{}, name: __MODULE__)
   end
 
+  def send_message_to_slack(text, channel) do
+    GenServer.cast(__MODULE__, {:message_to_slack, text, channel})
+  end
+
   @impl true
   def init(state) do
     {:ok, pid} =
@@ -17,5 +21,11 @@ defmodule SlackAdapter do
       })
 
     {:ok, %{state | slack_pid: pid}}
+  end
+
+  @impl true
+  def handle_cast({:message_to_slack, text, channel}, state) do
+    send(state.slack_pid, {:message, text, channel})
+    {:noreply, state}
   end
 end
