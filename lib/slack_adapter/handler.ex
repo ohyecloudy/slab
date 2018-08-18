@@ -326,14 +326,8 @@ defmodule SlackAdapter.Handler do
     Logger.info("pipelines options - #{inspect(options)}")
 
     with branch when not is_nil(branch) <- Keyword.get(options, :branch) do
-      %{body: pipelines} = Gitlab.pipelines(%{"per_page" => "100", "ref" => "#{branch}"})
-
       attachments =
-        pipelines
-        |> Stream.map(fn %{"id" => id} -> Gitlab.pipeline(id) end)
-        |> pipelines_custom_filter
-        |> take_until_last_suceess
-        |> pipelines_status
+        Gitlab.pipeline_status(branch)
         |> SlackAdapter.Attachments.from_pipelines()
         |> Poison.encode!()
 
@@ -343,44 +337,5 @@ defmodule SlackAdapter.Handler do
         attachments: attachments
       })
     end
-  end
-
-  defp pipelines_custom_filter(pipelines) do
-    filter = Application.get_env(:slab, :pipeline_custom_filter)
-
-    if filter do
-      Logger.info("process custom pipelines filter - #{inspect(filter)}")
-      Stream.filter(pipelines, filter)
-    else
-      pipelines
-    end
-  end
-
-  defp take_until_last_suceess(pipelines) do
-    idx = Enum.find_index(pipelines, fn %{"status" => status} -> status == "success" end)
-
-    if idx do
-      Enum.take(pipelines, idx + 1)
-    else
-      Enum.take(pipelines, 0)
-    end
-  end
-
-  defp pipelines_status(pipelines) do
-    success = List.last(pipelines)
-    failed = Enum.find(pipelines, fn %{"status" => status} -> status == "failed" end)
-    running = Enum.find(pipelines, fn %{"status" => status} -> status == "running" end)
-
-    %{
-      success: pipeline_commit(success),
-      failed: pipeline_commit(failed),
-      running: pipeline_commit(running)
-    }
-  end
-
-  defp pipeline_commit(nil), do: nil
-
-  defp pipeline_commit(pipeline) do
-    %{pipeline: pipeline, commit: Gitlab.commit(pipeline["sha"])}
   end
 end

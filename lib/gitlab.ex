@@ -69,6 +69,16 @@ defmodule Gitlab do
     body
   end
 
+  def pipeline_status(branch) do
+    %{body: pipelines} = Gitlab.pipelines(%{"per_page" => "100", "ref" => branch})
+
+    pipelines
+    |> Stream.map(fn %{"id" => id} -> Gitlab.pipeline(id) end)
+    |> pipelines_custom_filter
+    |> take_until_last_suceess
+    |> build_pipeline_status
+  end
+
   defp get(url, default_body \\ []) do
     timeout = Keyword.get(Application.get_env(:slab, :gitlab), :timeout_ms)
     access_token = Keyword.get(Application.get_env(:slab, :gitlab), :private_token)
@@ -132,5 +142,44 @@ defmodule Gitlab do
         Logger.warn("#{inspect(err)}")
         err
     end
+  end
+
+  defp pipelines_custom_filter(pipelines) do
+    filter = Application.get_env(:slab, :pipeline_custom_filter)
+
+    if filter do
+      Logger.info("process custom pipelines filter - #{inspect(filter)}")
+      Stream.filter(pipelines, filter)
+    else
+      pipelines
+    end
+  end
+
+  defp take_until_last_suceess(pipelines) do
+    idx = Enum.find_index(pipelines, fn %{"status" => status} -> status == "success" end)
+
+    if idx do
+      Enum.take(pipelines, idx + 1)
+    else
+      Enum.take(pipelines, 0)
+    end
+  end
+
+  defp build_pipeline_status(pipelines) do
+    success = List.last(pipelines)
+    failed = Enum.find(pipelines, fn %{"status" => status} -> status == "failed" end)
+    running = Enum.find(pipelines, fn %{"status" => status} -> status == "running" end)
+
+    %{
+      success: pipeline_commit(success),
+      failed: pipeline_commit(failed),
+      running: pipeline_commit(running)
+    }
+  end
+
+  defp pipeline_commit(nil), do: nil
+
+  defp pipeline_commit(pipeline) do
+    %{pipeline: pipeline, commit: Gitlab.commit(pipeline["sha"])}
   end
 end
