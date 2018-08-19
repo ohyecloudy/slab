@@ -93,8 +93,12 @@ defmodule SlackAdapter.Handler do
 
   def handle_event(_, _, state), do: {:ok, state}
 
-  def handle_info({:message, text, channel}, slack, state) do
-    send_message(text, channel, slack)
+  def handle_info({:message, text, attachments, channel}, _slack, state) do
+    Slack.Web.Chat.post_message(channel, text, %{
+      as_user: false,
+      token: Application.get_env(:slack, :token),
+      attachments: Poison.encode!(attachments)
+    })
 
     {:ok, state}
   end

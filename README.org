@@ -160,3 +160,20 @@ slack + gitlab.
     #+END_SRC
 
     =config.exs= 파일에서 커스텀 필터를 정의할 수 있다. 커스텀 필터를 통과한 파이프라인에서 성공, 실패, 실행 중 파이프라인을 골라낸다.
+*** pipeline 상태 변경을 slack 채널에 통보
+    [[docs/image/pipeline_watcher_1.png]]
+
+    config에 설정한 시간 간격으로 파이프라인 상태 변경을 감지해서 통보한다.
+
+    #+BEGIN_SRC elixir
+      # :pipeline_watcher 설정이 없으면 파이프라인 감시 기능이 꺼진다
+      config :slab, :pipeline_watcher,
+        # 파이프라인 상태를 감시할 브랜치 이름
+        target_branch: "master",
+        # polling 주기
+        poll_changes_interval_ms: 1000 * 60 * 10,
+        # 결과를 통보할 slack 채널 이름
+        notify_stack_channel_name: "#general"
+    #+END_SRC
+
+    =config.exs= 파일에서 파이프라인 감시 관련 설정을 한다.

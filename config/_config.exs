@@ -16,6 +16,15 @@ config :slab, :gitlab,
 # master 권한을 가진 slack user
 config :slab, masters: ["ohyecloudy"]
 
+# :pipeline_watcher 설정이 없으면 파이프라인 감시 기능이 꺼진다
+config :slab, :pipeline_watcher,
+  # 파이프라인 상태를 감시할 브랜치 이름
+  target_branch: "master",
+  # polling 주기
+  poll_changes_interval_ms: 1000 * 60 * 10,
+  # 결과를 통보할 slack 채널 이름
+  notify_stack_channel_name: "#general"
+
 # @slab pipelines --branch <branch_name>
 # 명령으로 출력할 파이프라인 사용자 필터를 정의할 수 있다
 # 입력은 gitlab api 참고
