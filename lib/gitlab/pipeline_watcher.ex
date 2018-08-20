@@ -11,7 +11,10 @@ defmodule Gitlab.PipelineWatcher do
 
   def start_link(args) do
     Logger.info("start pipeline watcher. config - #{inspect(args)}")
-    GenServer.start_link(__MODULE__, Map.merge(%State{}, Map.new(args)), name: __MODULE__)
+
+    GenServer.start_link(__MODULE__, Map.merge(%State{}, Map.new(args)),
+      name: String.to_atom("#{Atom.to_string(__MODULE__)}_#{args.target_branch}")
+    )
   end
 
   @impl true
@@ -50,7 +53,7 @@ defmodule Gitlab.PipelineWatcher do
           %{state | last_pipeline_status: new_status}
       end
 
-    Logger.info("poll changes - pipeline status #{changed}")
+    Logger.info("poll changes, branch - #{branch}, pipeline status - #{changed}")
 
     schedule_poll_changes(state.poll_changes_interval_ms)
     {:noreply, state}

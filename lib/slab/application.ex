@@ -10,7 +10,7 @@ defmodule Slab.Application do
 
     children =
       if pipeline_watcher_config do
-        children ++ [{Gitlab.PipelineWatcher, pipeline_watcher_config}]
+        children ++ [{Gitlab.PipelineWatcherSupervisor, Map.new(pipeline_watcher_config)}]
       else
         children
       end

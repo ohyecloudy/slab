@@ -168,8 +168,8 @@ slack + gitlab.
     #+BEGIN_SRC elixir
       # :pipeline_watcher 설정이 없으면 파이프라인 감시 기능이 꺼진다
       config :slab, :pipeline_watcher,
-        # 파이프라인 상태를 감시할 브랜치 이름
-        target_branch: "master",
+        # 파이프라인 상태를 감시할 브랜치 이름 리스트
+        target_branch_list: ["master", "dev"],
         # polling 주기
         poll_changes_interval_ms: 1000 * 60 * 10,
         # 결과를 통보할 slack 채널 이름
