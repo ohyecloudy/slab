@@ -94,7 +94,7 @@ defmodule SlackAdapter.Attachments do
 
   def limit_count, do: 20
 
-  def from_pipelines(%{success: success, failed: failed, running: running}) do
+  def from_pipelines(%{success: success, failed: failed, running: running, branch: branch}) do
     a_success = pipeline_common_attachment(success)
     a_failed = pipeline_common_attachment(failed)
     a_running = pipeline_common_attachment(running)
@@ -103,7 +103,7 @@ defmodule SlackAdapter.Attachments do
       cond do
         success && failed ->
           """
-          :boom: 빌드가 깨져있습니다. 확인 해주세요. :boom:
+          :boom: `#{branch}` 브랜치 빌드가 깨져있습니다. 확인 해주세요. :boom:
 
           `git log --oneline --graph #{String.slice(success.pipeline["sha"], 0..10)}..#{
             String.slice(failed.pipeline["sha"], 0..10)
@@ -111,7 +111,7 @@ defmodule SlackAdapter.Attachments do
           """
 
         success ->
-          ":tada: 빌드는 그린라이트 :tada:"
+          ":tada: `#{branch}` 브랜치 빌드는 그린라이트 :tada:"
 
         true ->
           ""

@@ -77,6 +77,7 @@ defmodule Gitlab do
     |> pipelines_custom_filter
     |> take_until_last_suceess
     |> build_pipeline_status
+    |> Map.put(:branch, branch)
   end
 
   defp get(url, default_body \\ []) do
