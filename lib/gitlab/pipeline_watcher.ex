@@ -19,44 +19,49 @@ defmodule Gitlab.PipelineWatcher do
 
   @impl true
   def init(state) do
+    state = poll_changes(state)
+
     schedule_poll_changes(state.poll_changes_interval_ms)
     {:ok, state}
   end
 
   @impl true
   def handle_info(:poll_changes, state) do
+    state = poll_changes(state)
+
+    schedule_poll_changes(state.poll_changes_interval_ms)
+    {:noreply, state}
+  end
+
+  defp poll_changes(state) do
     branch = state.target_branch
     channel = state.notify_stack_channel_name
     new_status = Gitlab.pipeline_status(branch)
     changed = pipeline_changed_status(state.last_pipeline_status, new_status)
 
-    state =
-      case changed do
-        :init ->
-          SlackAdapter.send_message_to_slack(
-            ":cop: #{branch} 브랜치 pipeline 감시를 시작합니다 :cop:",
-            channel
-          )
-
-          %{state | last_pipeline_status: new_status}
-
-        :not_changed ->
-          state
-
-        _ ->
-          SlackAdapter.send_message_to_slack(
-            "",
-            SlackAdapter.Attachments.from_pipelines(new_status),
-            channel
-          )
-
-          %{state | last_pipeline_status: new_status}
-      end
-
     Logger.info("poll changes, branch - #{branch}, pipeline status - #{changed}")
 
-    schedule_poll_changes(state.poll_changes_interval_ms)
-    {:noreply, state}
+    case changed do
+      :init ->
+        SlackAdapter.send_message_to_slack(
+          ":cop: #{branch} 브랜치 pipeline 감시를 시작합니다 :cop:",
+          channel
+        )
+
+        %{state | last_pipeline_status: new_status}
+
+      :not_changed ->
+        state
+
+      _ ->
+        SlackAdapter.send_message_to_slack(
+          "",
+          SlackAdapter.Attachments.from_pipelines(new_status),
+          channel
+        )
+
+        %{state | last_pipeline_status: new_status}
+    end
   end
 
   defp schedule_poll_changes(interval_ms) do
