@@ -71,26 +71,29 @@ defmodule Gitlab.PipelineWatcher do
   defp pipeline_changed_status(nil, _curr), do: :init
 
   defp pipeline_changed_status(prev, curr) do
-    if prev.failed do
-      if curr.failed do
+    cond do
+      prev.failed && curr.failed ->
         if prev.failed.pipeline["id"] == curr.failed.pipeline["id"] do
           :not_changed
         else
           :still_failing
         end
-      else
+
+      prev.failed && curr.failed == nil ->
         :fixed
-      end
-    else
-      if curr.failed do
+
+      prev.failed == nil && curr.failed ->
         :failed
-      else
+
+      prev.success && curr.success ->
         if prev.success.pipeline["id"] == curr.success.pipeline["id"] do
           :not_changed
         else
           :success
         end
-      end
+
+      true ->
+        :not_changed
     end
   end
 end
