@@ -73,6 +73,11 @@ defmodule SlackAdapter.Handler do
             |> extract_options("pipelines")
             |> process_pipelines(message.channel)
 
+          String.contains?(command, "pipeline-watcher") ->
+            command
+            |> extract_options("pipeline-watcher")
+            |> process_pipeline_watcher(slack, message.channel)
+
           true ->
             nil
         end
@@ -88,6 +93,7 @@ defmodule SlackAdapter.Handler do
     custom = %{name: slack.me.name, mention_str: "<@#{slack.me.id}>"}
     Logger.info("Hello - bot name(#{custom.name}), mention_str(#{custom.mention_str})")
     Logger.info("local time zone - #{inspect(Timex.Timezone.local())}")
+    Slab.Server.start_pipeline_watcher()
     {:ok, put_in(state[:slab], custom)}
   end
 
@@ -168,6 +174,11 @@ defmodule SlackAdapter.Handler do
     `pipelines` - pipeline 상태를 조회합니다.
     ```
     @slab pipelines --branch master
+    ```
+
+    `pipeline-watcher start/stop` - pipeline 상태 감시를 시작하거나 중지합니다.
+    ```
+    @slab pipeline-watcher stop
     ```
     """
   end
@@ -340,6 +351,27 @@ defmodule SlackAdapter.Handler do
         token: Application.get_env(:slack, :token),
         attachments: attachments
       })
+    end
+  end
+
+  def process_pipeline_watcher(options, slack, channel) do
+    options =
+      case options do
+        "start" -> {:ok, true}
+        "stop" -> {:ok, false}
+        _ -> {:error, options}
+      end
+
+    Logger.info("pipeline-watcher options - #{inspect(options)}")
+
+    with {:ok, is_start} <- options do
+      if is_start do
+        Slab.Server.start_pipeline_watcher()
+        send_message(":mag: 파이프라인 감시를 시작합니다 :mag:", channel, slack)
+      else
+        Slab.Server.stop_pipeline_watcher()
+        send_message(":mag: 파이프라인 감시를 중지합니다 :mag:", channel, slack)
+      end
     end
   end
 end

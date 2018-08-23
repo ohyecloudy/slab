@@ -7,16 +7,7 @@ defmodule Slab.Supervisor do
 
   @impl true
   def init(_args) do
-    pipeline_watcher_config = Application.get_env(:slab, :pipeline_watcher)
-
-    children = [{SlackAdapter, []}]
-
-    children =
-      if pipeline_watcher_config do
-        children ++ [{Gitlab.PipelineWatcherSupervisor, Map.new(pipeline_watcher_config)}]
-      else
-        children
-      end
+    children = [{SlackAdapter, []}, {Slab.Server, %{sup: self()}}]
 
     Supervisor.init(children, strategy: :one_for_one)
   end

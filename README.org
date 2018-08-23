@@ -177,3 +177,10 @@ slack + gitlab.
     #+END_SRC
 
     =config.exs= 파일에서 파이프라인 감시 관련 설정을 한다.
+
+    #+BEGIN_EXAMPLE
+      @slab pipeline-watcher start
+      @slab pipeline-watcher stop
+    #+END_EXAMPLE
+
+    파이프라인 상태 변경 감시를 수동으로 켜고 끌 수 있다.

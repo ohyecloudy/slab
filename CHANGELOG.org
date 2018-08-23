@@ -19,3 +19,4 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - branch-access 커맨드는 master 권한을 가진 유저만 실행할 수 있다
     - pipelines 커맨드로 pipeline 상태를 조회할 수 있다
     - config에서 파이프라인 상태 변경 통보를 설정할 수 있다
+    - pipeline-watcher 커맨드로 파이프라인 상태 변경 감시를 켜고 끌 수 있다
