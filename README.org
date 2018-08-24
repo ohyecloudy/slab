@@ -23,11 +23,10 @@ slack + gitlab.
    =config.exs= 설정 파일 업데이트.
 
    #+BEGIN_EXAMPLE
-     $ mix deps.get
-     $ mix run --no-halt
+     $ script/server
    #+END_EXAMPLE
 
-   디펜던시 받고 실행
+   실행
 ** 기능
    #+BEGIN_EXAMPLE
      @slab help

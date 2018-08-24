@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# script/bootstrap: Resolve all dependencies that the application requires to
+#                   run.
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+if ! command -v elixir > /dev/null; then
+    if [ "$(uname -s)" = "Linux" ]; then
+        echo "==> Installing elixir…"
+        sudo apt-get update
+        sudo apt-get install -y wget
+        wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb -O /tmp/erlang-solutions_1.0_all.deb && sudo dpkg -i /tmp/erlang-solutions_1.0_all.deb
+        sudo apt-get update
+        sudo apt-get install -y esl-erlang
+        sudo apt-get install -y elixir
+    elif [ "$(uname -s)" = "Darwin" ]; then
+        echo "==> Installing elixir…"
+        brew update
+        brew install elixir
+    else
+        echo "FAILED: install elixir"
+        exit 1
+    fi
+fi
+
+mix local.hex --force
+mix deps.get
