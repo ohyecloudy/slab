@@ -47,6 +47,21 @@ defmodule Gitlab do
     end
   end
 
+  def merge_request(id) do
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    url = api_base_url <> "/merge_requests/#{id}"
+
+    %{body: body} = get(url)
+    body
+  end
+
+  def merge_requests(query_options = %{}) do
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    url = api_base_url <> "/merge_requests?" <> URI.encode_query(query_options)
+
+    get(url)
+  end
+
   def merge_requests_associated_with(commit_id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/repository/commits/#{commit_id}/merge_requests"

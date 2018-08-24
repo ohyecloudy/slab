@@ -63,6 +63,11 @@ defmodule SlackAdapter.Handler do
             |> extract_options("commits-without-mr")
             |> process_commits_without_mr(slack, message.channel)
 
+          String.contains?(command, "self-merge") ->
+            command
+            |> extract_options("self-merge")
+            |> process_self_merge(slack, message.channel)
+
           String.contains?(command, "branch-access") && master ->
             command
             |> extract_options("branch-access")
@@ -163,6 +168,12 @@ defmodule SlackAdapter.Handler do
     ```
     @slab commits-without-mr --date 2018-06-27
     @slab commits-without-mr user1 user2 --date 2018-06-27
+    ```
+
+    `self-merge` - merge request를 만든 사람과 머지한 사람이 같은 merge request를 출력합니다. author 이름을 넣으면 해당 author의 merge request만 검사합니다.
+    ```
+    @slab self-merge --date 2018-06-27
+    @slab self-merge user1 user2 --date 2018-06-27
     ```
 
     `branch-access` - protected branches 접근 레벨을 변경합니다. 레벨 값으로 no, developer, maintainer, admin 문자를 사용할 수 있습니다.
@@ -298,6 +309,96 @@ defmodule SlackAdapter.Handler do
           token: Application.get_env(:slack, :token),
           attachments: attachments
         })
+      end)
+    end
+  end
+
+  defp process_self_merge(options, slack, channel) do
+    Logger.info("self-merge input options text - #{options}")
+
+    {options, target_authors, _} =
+      OptionParser.parse(OptionParser.split(options), switches: [date: :string])
+
+    Logger.info(
+      "self-merge options - #{inspect(options)}, target authors - #{inspect(target_authors)}"
+    )
+
+    merge_requests =
+      with date when not is_nil(date) <- Keyword.get(options, :date),
+           {:ok, from_date} <- Date.from_iso8601(date),
+           to_date <- Date.add(from_date, 1) do
+        Logger.info("self-merge #{inspect(from_date)} ~ #{inspect(to_date)}")
+
+        mr_query = %{
+          "since" => Date.to_string(from_date) <> "T00:00:00.000+09:00",
+          "until" => Date.to_string(to_date) <> "T00:00:00.000+09:00",
+          "state" => "merged"
+        }
+
+        Gitlab.Pagination.all(mr_query, &Gitlab.merge_requests/1)
+        |> List.flatten()
+      else
+        _ -> []
+      end
+
+    Logger.info("merge request count - #{Enum.count(merge_requests)}")
+
+    merge_requests =
+      if Enum.empty?(target_authors) do
+        merge_requests
+      else
+        merge_requests
+        |> Enum.filter(fn %{"author" => author} ->
+          if author do
+            String.contains?(author["username"], target_authors) ||
+              String.contains?(author["name"], target_authors)
+          else
+            false
+          end
+        end)
+      end
+
+    Logger.info(
+      "filtered merge request count - #{Enum.count(merge_requests)}, target authors - #{
+        inspect(target_authors)
+      }"
+    )
+
+    merge_requests =
+      merge_requests
+      |> Enum.map(fn %{"iid" => id} -> Gitlab.merge_request(id) end)
+      |> Enum.filter(fn %{"author" => author, "merged_by" => merged_by} ->
+        if author && merged_by do
+          author["id"] == merged_by["id"]
+        else
+          false
+        end
+      end)
+
+    if Enum.empty?(merge_requests) do
+      send_message(
+        "self merge한 merge request를 못 찾았습니다.",
+        channel,
+        slack
+      )
+    else
+      merge_requests
+      |> Enum.chunk_every(SlackAdapter.Attachments.limit_count())
+      |> Enum.each(fn mrs ->
+        attachments =
+          mrs
+          |> SlackAdapter.Attachments.from_merge_requests()
+          |> Poison.encode!()
+
+        Slack.Web.Chat.post_message(
+          channel,
+          "self merge한 merge request를 총 #{Enum.count(merge_requests)}개 찾았습니다.",
+          %{
+            as_user: false,
+            token: Application.get_env(:slack, :token),
+            attachments: attachments
+          }
+        )
       end)
     end
   end

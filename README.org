@@ -99,6 +99,20 @@ slack + gitlab.
     #+END_EXAMPLE
 
     조회할 유저를 지정할 수 있다.
+*** self merge 조회
+    [[docs/image/self_merge_1.png]]
+
+    #+BEGIN_EXAMPLE
+      @slab self-merge --date 2018-06-27
+    #+END_EXAMPLE
+
+    해당 날짜에 업데이트된 merge request 중 self merge를 한 merge request를 조회한다. 생성한 사람과 머지한 사람이 같으면 self merge로 판단한다.
+
+    #+BEGIN_EXAMPLE
+      @slab self-merge 오종빈 ohyecloudy --date 2018-06-27
+    #+END_EXAMPLE
+
+    조회할 유저를 지정할 수 있다.
 *** 복잡한 명령어를 대체하는 alias
     [[docs/image/alias.png]]
 

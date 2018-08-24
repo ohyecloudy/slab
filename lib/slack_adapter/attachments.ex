@@ -57,6 +57,24 @@ defmodule SlackAdapter.Attachments do
     end)
   end
 
+  def from_merge_requests(mrs) do
+    mrs
+    |> Enum.map(fn x = %{} ->
+      author = get_in(x, ["author", "name"])
+      assignee = get_in(x, ["assignee", "name"])
+      merged_by = get_in(x, ["merged_by", "name"])
+
+      %{
+        color: "#939393",
+        title:
+          "[#{inspect(author)} -> #{inspect(assignee)}, MERGED_BY #{inspect(merged_by)}] #{
+            x["title"]
+          }",
+        title_link: x["web_url"]
+      }
+    end)
+  end
+
   def from_protected_branches(branches) do
     with name when not is_nil(name) <- Map.get(branches, "name"),
          merge_levels when merge_levels != [] <- Map.get(branches, "merge_access_levels", []),
