@@ -304,11 +304,15 @@ defmodule SlackAdapter.Handler do
           |> SlackAdapter.Attachments.from_commits(:summary)
           |> Poison.encode!()
 
-        Slack.Web.Chat.post_message(channel, "", %{
-          as_user: false,
-          token: Application.get_env(:slack, :token),
-          attachments: attachments
-        })
+        Slack.Web.Chat.post_message(
+          channel,
+          "merge request가 없는 commit을 총 #{Enum.count(commits_without_mr)}개 찾았습니다.",
+          %{
+            as_user: false,
+            token: Application.get_env(:slack, :token),
+            attachments: attachments
+          }
+        )
       end)
     end
   end
