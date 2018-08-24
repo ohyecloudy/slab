@@ -269,7 +269,7 @@ defmodule SlackAdapter.Handler do
         merge_commit = String.contains?(message, "See merge request")
 
         if target_author && !merge_commit do
-          %{body: body} = Gitlab.merge_requests(id)
+          %{body: body} = Gitlab.merge_requests_associated_with(id)
           Enum.empty?(body)
         else
           false
