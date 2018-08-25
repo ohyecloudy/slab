@@ -9,24 +9,35 @@ slack + gitlab.
 [[https://www.gitlab.com/][gitlab]] API를 사용해 귀찮은 일을 덜어주는 [[https://slack.com/][slack]] 봇. 외부에서 접근이 불가능한 gitlab 서버를 운영하고 있을 때, 필요한 기능을 구현했다. 봇은 외부 내부 둘 다 접근 가능한 곳에서 실행해야 한다.
 
 ** 시작하기
-   #+BEGIN_EXAMPLE
-     $ git clone https://github.com/ohyecloudy/slab.git ~/slab
-   #+END_EXAMPLE
+*** 준비
+    #+BEGIN_EXAMPLE
+      $ git clone https://github.com/ohyecloudy/slab.git ~/slab
+    #+END_EXAMPLE
 
-   git clone.
+    git clone.
 
-   #+BEGIN_EXAMPLE
-     $ cp config/_config.exs config/config.exs
-     $ emacs config/config.exs
-   #+END_EXAMPLE
+    #+BEGIN_EXAMPLE
+      $ cp config/_config.exs config/config.exs
+      $ emacs config/config.exs
+    #+END_EXAMPLE
 
-   =config.exs= 설정 파일 업데이트.
+    =config.exs= 설정 파일 업데이트.
 
-   #+BEGIN_EXAMPLE
-     $ script/server
-   #+END_EXAMPLE
+*** 로컬 실행
+    #+BEGIN_EXAMPLE
+      $ script/server
+    #+END_EXAMPLE
 
-   실행
+*** docker로 실행
+    #+BEGIN_EXAMPLE
+      $ script/server-docker
+    #+END_EXAMPLE
+
+*** vagrant로 실행
+    #+BEGIN_EXAMPLE
+      $ vagrant up
+    #+END_EXAMPLE
+
 ** 기능
    #+BEGIN_EXAMPLE
      @slab help

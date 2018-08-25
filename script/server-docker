@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+docker build -t slab:latest .
+docker run -d --name slab slab:latest

@@ -23,3 +23,5 @@ erl_crash.dump
 gitlab_straw-*.tar
 
 /config/config.exs
+
+/.vagrant/
