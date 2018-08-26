@@ -25,3 +25,5 @@ gitlab_straw-*.tar
 /config/config.exs
 
 /.vagrant/
+
+/log/

@@ -55,3 +55,10 @@ config :slab, :aliases,
 
 # OAuth & Permissions > Bot User OAuth Access Token
 config :slack, token: "TOKEN 여기에"
+
+config :logger,
+  backends: [:console, {LoggerFileBackend, :file_log}]
+
+config :logger, :file_log,
+  path: "log/slab.log",
+  level: :info

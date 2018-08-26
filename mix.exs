@@ -24,7 +24,8 @@ defmodule Slab.MixProject do
     [
       {:slack, "~> 0.14.0"},
       {:httpoison, "~> 1.1", override: true},
-      {:timex, "~> 3.3"}
+      {:timex, "~> 3.3"},
+      {:logger_file_backend, "~> 0.0.10"}
     ]
   end
 end
