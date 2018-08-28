@@ -334,8 +334,8 @@ defmodule SlackAdapter.Handler do
         Logger.info("self-merge #{inspect(from_date)} ~ #{inspect(to_date)}")
 
         mr_query = %{
-          "since" => Date.to_string(from_date) <> "T00:00:00.000+09:00",
-          "until" => Date.to_string(to_date) <> "T00:00:00.000+09:00",
+          "updated_after" => Date.to_string(from_date) <> "T00:00:00.000+09:00",
+          "updated_before" => Date.to_string(to_date) <> "T00:00:00.000+09:00",
           "state" => "merged"
         }
 
