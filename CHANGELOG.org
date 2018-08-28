@@ -6,7 +6,8 @@
 
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]].
 
-** [[https://github.com/ohyecloudy/slab/compare/v1.0.0...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.1...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.0...v1.0.1][v1.0.1]]
 *** Added
     - 파이프라인 상태(fixed, success, failed, still failing) 알림 여부를 config로 설정할 수 있다
 *** Fixed
