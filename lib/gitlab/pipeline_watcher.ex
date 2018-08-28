@@ -6,7 +6,8 @@ defmodule Gitlab.PipelineWatcher do
     defstruct last_pipeline_status: nil,
               target_branch: nil,
               poll_changes_interval_ms: nil,
-              notify_stack_channel_name: nil
+              notify_stack_channel_name: nil,
+              notify_pipeline_status: []
   end
 
   def start_link(args) do
@@ -41,8 +42,8 @@ defmodule Gitlab.PipelineWatcher do
 
     Logger.info("poll changes, branch - #{branch}, pipeline status - #{changed}")
 
-    case changed do
-      :init ->
+    cond do
+      changed == :init ->
         SlackAdapter.send_message_to_slack(
           ":cop: #{branch} 브랜치 pipeline 감시를 시작합니다 :cop:",
           channel
@@ -50,10 +51,7 @@ defmodule Gitlab.PipelineWatcher do
 
         %{state | last_pipeline_status: new_status}
 
-      :not_changed ->
-        state
-
-      _ ->
+      changed in state.notify_pipeline_status ->
         SlackAdapter.send_message_to_slack(
           "",
           SlackAdapter.Attachments.from_pipelines(new_status),
@@ -61,6 +59,9 @@ defmodule Gitlab.PipelineWatcher do
         )
 
         %{state | last_pipeline_status: new_status}
+
+      true ->
+        state
     end
   end
 

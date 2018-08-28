@@ -23,7 +23,9 @@ config :slab, :pipeline_watcher,
   # polling 주기
   poll_changes_interval_ms: 1000 * 60 * 10,
   # 결과를 통보할 slack 채널 이름
-  notify_stack_channel_name: "#general"
+  notify_stack_channel_name: "#general",
+  # 결과를 통보할 파이프라인 상태(:still_failing, :fixed, :failed, :success)
+  notify_pipeline_status: [:still_failing, :fixed, :failed, :success]
 
 # @slab pipelines --branch <branch_name>
 # 명령으로 출력할 파이프라인 사용자 필터를 정의할 수 있다
