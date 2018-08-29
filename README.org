@@ -33,6 +33,14 @@ slack + gitlab.
       $ script/server-docker
     #+END_EXAMPLE
 
+    인자가 없으면 timezone을 Asia/Seoul로 설정한다.
+
+    #+BEGIN_EXAMPLE
+      $ script/server-docker Europe/Oslo
+    #+END_EXAMPLE
+
+    인자는 [[https://en.wikipedia.org/wiki/List_of_tz_database_time_zones][List of tz database time zones]]를 참고한다.
+
 *** vagrant로 실행
     #+BEGIN_EXAMPLE
       $ vagrant up
