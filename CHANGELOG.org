@@ -6,7 +6,8 @@
 
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]].
 
-** [[https://github.com/ohyecloudy/slab/compare/v1.0.1...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.2...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.1...v1.0.2][v1.0.2]]
 *** Added
     - docker로 서버를 실행할 때, timezone을 설정할 수 있다.
 *** Fixed
