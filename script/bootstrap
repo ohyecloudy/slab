@@ -27,4 +27,5 @@ if ! command -v elixir > /dev/null; then
 fi
 
 mix local.hex --force
+mix local.rebar --force
 mix deps.get
