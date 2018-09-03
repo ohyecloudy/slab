@@ -2,6 +2,9 @@ defmodule Gitlab do
   require Logger
   use HTTPoison.Base
 
+  @type list_response :: %{headers: map(), body: [map()]}
+
+  @spec issue(pos_integer()) :: map()
   def issue(id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/issues/#{id}"
@@ -10,6 +13,7 @@ defmodule Gitlab do
     body
   end
 
+  @spec issues(map()) :: list_response()
   def issues(query_options = %{}) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/issues?" <> URI.encode_query(query_options)
@@ -17,6 +21,7 @@ defmodule Gitlab do
     get(url)
   end
 
+  @spec commit(pos_integer()) :: map()
   def commit(id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/repository/commits/#{id}"
@@ -25,6 +30,7 @@ defmodule Gitlab do
     body
   end
 
+  @spec commits(map()) :: list_response()
   def commits(query_options = %{}) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/repository/commits?" <> URI.encode_query(query_options)
@@ -32,11 +38,13 @@ defmodule Gitlab do
     get(url)
   end
 
+  @spec protected_branches_access_level(String.t()) :: non_neg_integer() | nil
   def protected_branches_access_level(level) do
     # https://docs.gitlab.com/ee/api/protected_branches.html 참고
     Map.get(%{"no" => 0, "developer" => 30, "maintainer" => 40, "admin" => 60}, level, nil)
   end
 
+  @spec protected_branches(map()) :: %{headers: map(), body: map()} | atom()
   def protected_branches(attrs = %{}) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
 
@@ -44,9 +52,12 @@ defmodule Gitlab do
          :ok <- delete(api_base_url <> "/protected_branches/#{branch_name}") do
       url = api_base_url <> "/protected_branches?" <> URI.encode_query(attrs)
       post(url)
+    else
+      _ -> :error
     end
   end
 
+  @spec merge_request(pos_integer()) :: map()
   def merge_request(id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/merge_requests/#{id}"
@@ -55,6 +66,7 @@ defmodule Gitlab do
     body
   end
 
+  @spec merge_requests(map()) :: list_response()
   def merge_requests(query_options = %{}) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/merge_requests?" <> URI.encode_query(query_options)
@@ -62,6 +74,7 @@ defmodule Gitlab do
     get(url)
   end
 
+  @spec merge_requests_associated_with(pos_integer()) :: list_response()
   def merge_requests_associated_with(commit_id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/repository/commits/#{commit_id}/merge_requests"
@@ -69,6 +82,7 @@ defmodule Gitlab do
     get(url)
   end
 
+  @spec pipelines(map()) :: list_response()
   def pipelines(query_options = %{}) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/pipelines?" <> URI.encode_query(query_options)
@@ -76,6 +90,7 @@ defmodule Gitlab do
     get(url)
   end
 
+  @spec pipeline(pos_integer()) :: map()
   def pipeline(id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/pipelines/#{id}"
@@ -84,6 +99,12 @@ defmodule Gitlab do
     body
   end
 
+  @spec pipeline_status(String.t()) :: %{
+          success: map() | nil,
+          failed: map() | nil,
+          running: map() | nil,
+          branch: String.t()
+        }
   def pipeline_status(branch) do
     %{body: pipelines} = Gitlab.pipelines(%{"per_page" => "100", "ref" => branch})
 
@@ -95,6 +116,7 @@ defmodule Gitlab do
     |> Map.put(:branch, branch)
   end
 
+  @spec get(String.t(), any()) :: %{headers: map(), body: any()}
   defp get(url, default_body \\ []) do
     timeout = Keyword.get(Application.get_env(:slab, :gitlab), :timeout_ms)
     access_token = Keyword.get(Application.get_env(:slab, :gitlab), :private_token)
@@ -116,6 +138,7 @@ defmodule Gitlab do
     end
   end
 
+  @spec post(String.t()) :: %{headers: map(), body: any()}
   defp post(url) do
     timeout = Keyword.get(Application.get_env(:slab, :gitlab), :timeout_ms)
     access_token = Keyword.get(Application.get_env(:slab, :gitlab), :private_token)
@@ -139,6 +162,7 @@ defmodule Gitlab do
     end
   end
 
+  @spec delete(String.t()) :: any()
   defp delete(url) do
     timeout = Keyword.get(Application.get_env(:slab, :gitlab), :timeout_ms)
     access_token = Keyword.get(Application.get_env(:slab, :gitlab), :private_token)
@@ -160,6 +184,7 @@ defmodule Gitlab do
     end
   end
 
+  @spec pipelines_custom_filter(Enumerable.t()) :: Enumerable.t()
   defp pipelines_custom_filter(pipelines) do
     filter = Application.get_env(:slab, :pipeline_custom_filter)
 
@@ -171,6 +196,7 @@ defmodule Gitlab do
     end
   end
 
+  @spec take_until_last_suceess(Enumerable.t()) :: Enumerable.t()
   defp take_until_last_suceess(pipelines) do
     idx = Enum.find_index(pipelines, fn %{"status" => status} -> status == "success" end)
 
@@ -181,6 +207,11 @@ defmodule Gitlab do
     end
   end
 
+  @spec build_pipeline_status(Enumerable.t()) :: %{
+          success: map() | nil,
+          failed: map() | nil,
+          running: map() | nil
+        }
   defp build_pipeline_status(pipelines) do
     success = List.last(pipelines)
     failed = Enum.find(pipelines, fn %{"status" => status} -> status == "failed" end)
@@ -193,6 +224,7 @@ defmodule Gitlab do
     }
   end
 
+  @spec pipeline_commit(map() | nil) :: map() | nil
   defp pipeline_commit(nil), do: nil
 
   defp pipeline_commit(pipeline) do

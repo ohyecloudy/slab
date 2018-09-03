@@ -7,7 +7,8 @@ defmodule Slab.MixProject do
       version: "0.1.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      dialyzer: [ignore_warnings: ".dialyzer_ignore.exs"]
     ]
   end
 
@@ -25,7 +26,8 @@ defmodule Slab.MixProject do
       {:slack, "~> 0.14.0"},
       {:httpoison, "~> 1.1", override: true},
       {:timex, "~> 3.3"},
-      {:logger_file_backend, "~> 0.0.10"}
+      {:logger_file_backend, "~> 0.0.10"},
+      {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false}
     ]
   end
 end

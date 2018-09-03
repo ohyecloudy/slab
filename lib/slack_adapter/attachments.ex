@@ -1,5 +1,6 @@
 defmodule SlackAdapter.Attachments do
-  def from_issues(issues, :summary) when is_list(issues) do
+  @spec from_issues([map()], :summary) :: [map()]
+  def from_issues(issues, :summary) do
     Enum.map(issues, fn x = %{} ->
       %{
         color: "#939393",
@@ -9,6 +10,7 @@ defmodule SlackAdapter.Attachments do
     end)
   end
 
+  @spec from_issue(map(), :detail) :: [map()] | []
   def from_issue(issue, :detail) when map_size(issue) == 0, do: []
 
   def from_issue(issue = %{}, :detail) do
@@ -45,7 +47,8 @@ defmodule SlackAdapter.Attachments do
     ]
   end
 
-  def from_commits(commits, :summary) when is_list(commits) do
+  @spec from_commits([map()], :summary) :: [map()]
+  def from_commits(commits, :summary) do
     base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/commit"
 
     Enum.map(commits, fn x = %{} ->
@@ -57,6 +60,7 @@ defmodule SlackAdapter.Attachments do
     end)
   end
 
+  @spec from_merge_requests([map()]) :: [map()]
   def from_merge_requests(mrs) do
     mrs
     |> Enum.map(fn x = %{} ->
@@ -75,6 +79,7 @@ defmodule SlackAdapter.Attachments do
     end)
   end
 
+  @spec from_protected_branches(map()) :: [map()] | []
   def from_protected_branches(branches) do
     with name when not is_nil(name) <- Map.get(branches, "name"),
          merge_levels when merge_levels != [] <- Map.get(branches, "merge_access_levels", []),
@@ -107,11 +112,14 @@ defmodule SlackAdapter.Attachments do
           ]
         }
       ]
+    else
+      _ -> []
     end
   end
 
   def limit_count, do: 20
 
+  @spec from_pipelines(map()) :: [map()]
   def from_pipelines(%{success: success, failed: failed, running: running, branch: branch}) do
     a_success = pipeline_common_attachment(success)
     a_failed = pipeline_common_attachment(failed)
@@ -138,6 +146,7 @@ defmodule SlackAdapter.Attachments do
     [%{pretext: summary}, a_success, a_failed, a_running]
   end
 
+  @spec pipeline_common_attachment(nil | map()) :: map()
   defp pipeline_common_attachment(nil), do: %{}
 
   defp pipeline_common_attachment(%{pipeline: pipeline, commit: commit}) do

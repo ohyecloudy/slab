@@ -114,6 +114,7 @@ defmodule SlackAdapter.Handler do
     {:ok, state}
   end
 
+  @spec normalize_test(String.t(), keyword(String.t())) :: String.t()
   defp normalize_test(text, mention_str: mention) do
     # html 특수문자를 변환해주는 함수가 있을법 한데, 못 찾음
     text
@@ -127,6 +128,7 @@ defmodule SlackAdapter.Handler do
     |> String.replace("“", "\"")
   end
 
+  @spec process_aliases(String.t()) :: String.t()
   defp process_aliases(command) do
     ret =
       Application.get_env(:slab, :aliases)
@@ -141,6 +143,7 @@ defmodule SlackAdapter.Handler do
     ret
   end
 
+  @spec post_gitlab_issue(map(), String.t()) :: :ok
   defp post_gitlab_issue(issue, channel) do
     attachments = SlackAdapter.Attachments.from_issue(issue, :detail)
 
@@ -157,6 +160,7 @@ defmodule SlackAdapter.Handler do
     end
   end
 
+  @spec help() :: String.t()
   defp help() do
     """
     `issues` - gitlab issue를 조회합니다. 사용할 수 있는 옵션은 https://docs.gitlab.com/ee/api/issues.html#list-issues 참고
@@ -194,6 +198,7 @@ defmodule SlackAdapter.Handler do
     """
   end
 
+  @spec extract_options(String.t(), String.t()) :: String.t()
   defp extract_options(full, command) do
     {start, length} = :binary.match(full, command)
 
@@ -202,6 +207,7 @@ defmodule SlackAdapter.Handler do
     |> String.trim()
   end
 
+  @spec process_issues(String.t(), String.t()) :: any()
   defp process_issues(options, channel) do
     Logger.info("issue options before eval - #{options}")
 
@@ -230,6 +236,7 @@ defmodule SlackAdapter.Handler do
     )
   end
 
+  @spec process_commits_without_mr(String.t(), map(), String.t()) :: any()
   defp process_commits_without_mr(options, slack, channel) do
     Logger.info("commits-without-mr input options text - #{options}")
 
@@ -317,6 +324,7 @@ defmodule SlackAdapter.Handler do
     end
   end
 
+  @spec process_self_merge(String.t(), map(), String.t()) :: any()
   defp process_self_merge(options, slack, channel) do
     Logger.info("self-merge input options text - #{options}")
 
@@ -407,6 +415,7 @@ defmodule SlackAdapter.Handler do
     end
   end
 
+  @spec process_branch_access(String.t(), String.t()) :: any()
   def process_branch_access(options, channel) do
     Logger.info("branch-access input options text - #{options}")
 
@@ -440,6 +449,7 @@ defmodule SlackAdapter.Handler do
     end
   end
 
+  @spec process_pipelines(String.t(), String.t()) :: any()
   def process_pipelines(options, channel) do
     {options, _, _} = OptionParser.parse(OptionParser.split(options), switches: [branch: :string])
 
@@ -459,6 +469,7 @@ defmodule SlackAdapter.Handler do
     end
   end
 
+  @spec process_pipeline_watcher(String.t(), map(), String.t()) :: any()
   def process_pipeline_watcher(options, slack, channel) do
     options =
       case options do

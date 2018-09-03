@@ -5,10 +5,12 @@ defmodule SlackAdapter do
     defstruct slack_pid: nil
   end
 
+  @spec start_link(any()) :: GenServer.on_start()
   def start_link(_args) do
     GenServer.start_link(__MODULE__, %State{}, name: __MODULE__)
   end
 
+  @spec send_message_to_slack(String.t(), [map()], String.t()) :: :ok
   def send_message_to_slack(text, attachments \\ [], channel) do
     GenServer.cast(__MODULE__, {:message_to_slack, text, attachments, channel})
   end

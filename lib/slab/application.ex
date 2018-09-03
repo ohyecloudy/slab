@@ -3,6 +3,7 @@ defmodule Slab.Application do
 
   use Application
 
+  @impl true
   def start(_type, args) do
     Slab.Supervisor.start_link(args)
   end

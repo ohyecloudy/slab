@@ -10,10 +10,11 @@ defmodule Gitlab.PipelineWatcher do
               notify_pipeline_status: []
   end
 
+  @spec start_link(map()) :: GenServer.on_start()
   def start_link(args) do
     Logger.info("start pipeline watcher. config - #{inspect(args)}")
 
-    GenServer.start_link(__MODULE__, Map.merge(%State{}, Map.new(args)),
+    GenServer.start_link(__MODULE__, Map.merge(%State{}, args),
       name: String.to_atom("#{Atom.to_string(__MODULE__)}_#{args.target_branch}")
     )
   end
@@ -34,6 +35,7 @@ defmodule Gitlab.PipelineWatcher do
     {:noreply, state}
   end
 
+  @spec poll_changes(%State{}) :: %State{}
   defp poll_changes(state) do
     branch = state.target_branch
     channel = state.notify_stack_channel_name
@@ -65,10 +67,13 @@ defmodule Gitlab.PipelineWatcher do
     end
   end
 
+  @spec schedule_poll_changes(pos_integer()) :: reference()
   defp schedule_poll_changes(interval_ms) do
     Process.send_after(self(), :poll_changes, interval_ms)
   end
 
+  @spec pipeline_changed_status(map() | nil, map() | nil) ::
+          :init | :not_changed | :still_failing | :fixed | :failed | :success
   defp pipeline_changed_status(nil, _curr), do: :init
 
   defp pipeline_changed_status(prev, curr) do

@@ -5,14 +5,17 @@ defmodule Slab.Server do
     defstruct sup: nil, pipeline_watcher_sup: nil
   end
 
+  @spec start_link(map()) :: GenServer.on_start()
   def start_link(%{sup: pid}) do
     GenServer.start_link(__MODULE__, %State{sup: pid}, name: __MODULE__)
   end
 
+  @spec start_pipeline_watcher() :: :ok
   def start_pipeline_watcher() do
     GenServer.cast(__MODULE__, :start_pipeline_watcher)
   end
 
+  @spec stop_pipeline_watcher() :: :ok
   def stop_pipeline_watcher() do
     GenServer.cast(__MODULE__, :stop_pipeline_watcher)
   end
