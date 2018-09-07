@@ -106,9 +106,7 @@ defmodule Gitlab do
           branch: String.t()
         }
   def pipeline_status(branch) do
-    %{body: pipelines} = Gitlab.pipelines(%{"per_page" => "100", "ref" => branch})
-
-    pipelines
+    Gitlab.PaginationStream.create(&Gitlab.pipelines/1, %{"ref" => branch})
     |> Stream.map(fn %{"id" => id} -> Gitlab.pipeline(id) end)
     |> pipelines_custom_filter
     |> take_until_last_suceess
@@ -198,13 +196,15 @@ defmodule Gitlab do
 
   @spec take_until_last_suceess(Enumerable.t()) :: Enumerable.t()
   defp take_until_last_suceess(pipelines) do
-    idx = Enum.find_index(pipelines, fn %{"status" => status} -> status == "success" end)
-
-    if idx do
-      Enum.take(pipelines, idx + 1)
-    else
-      Enum.take(pipelines, 0)
-    end
+    pipelines
+    |> Stream.transform(false, fn i, found_success ->
+      if found_success do
+        {:halt, found_success}
+      else
+        {[i], i["status"] == "success"}
+      end
+    end)
+    |> Enum.to_list()
   end
 
   @spec build_pipeline_status(Enumerable.t()) :: %{
