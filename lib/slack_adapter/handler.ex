@@ -260,8 +260,8 @@ defmodule SlackAdapter.Handler do
           "until" => Date.to_string(to_date) <> "T00:00:00.000+09:00"
         }
 
-        Gitlab.Pagination.all(commits_query, &Gitlab.commits/1)
-        |> List.flatten()
+        Gitlab.PaginationStream.create(&Gitlab.commits/1, commits_query)
+        |> Enum.to_list()
       else
         _ -> []
       end
@@ -347,8 +347,8 @@ defmodule SlackAdapter.Handler do
           "state" => "merged"
         }
 
-        Gitlab.Pagination.all(mr_query, &Gitlab.merge_requests/1)
-        |> List.flatten()
+        Gitlab.PaginationStream.create(&Gitlab.merge_requests/1, mr_query)
+        |> Enum.to_list()
       else
         _ -> []
       end
