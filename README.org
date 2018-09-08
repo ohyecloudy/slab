@@ -218,3 +218,6 @@ slack + gitlab.
     #+END_EXAMPLE
 
     파이프라인 상태 변경 감시를 수동으로 켜고 끌 수 있다.
+
+** 참고
+   - [[http://ohyecloudy.com/pnotes/archives/side-project-slab/][#side_project slab 후기 - gitlab API를 사용해 귀찮은 일을 덜어주는 slack 봇]]
