@@ -4,6 +4,8 @@
 #+AUTHOR: Jongbin Oh
 #+EMAIL: ohyecloudy@gmail.com
 
+[[https://travis-ci.org/ohyecloudy/slab][https://travis-ci.org/ohyecloudy/slab.svg?branch=master]]
+
 slack + gitlab.
 
 [[https://www.gitlab.com/][gitlab]] API를 사용해 귀찮은 일을 덜어주는 [[https://slack.com/][slack]] 봇. 외부에서 접근이 불가능한 gitlab 서버를 운영하고 있을 때, 필요한 기능을 구현했다. 봇은 외부 내부 둘 다 접근 가능한 곳에서 실행해야 한다.
