@@ -107,10 +107,11 @@ slack + gitlab.
     [[docs/image/commits_without_mr_1.png]]
 
     #+BEGIN_EXAMPLE
+      @slab commits-without-mr --date -1
       @slab commits-without-mr --date 2018-06-27
     #+END_EXAMPLE
 
-    해당 날짜에 master 브랜치에 머지한 커밋 중 연관된 merge request가 없는 commit을 출력한다.
+    해당 날짜에 master 브랜치에 머지한 커밋 중 연관된 merge request가 없는 commit을 출력한다. 오늘을 기준으로 한 delta days 입력도 가능하다. -1은 어제.
 
     [[docs/image/commits_without_mr_2.png]]
 
@@ -123,10 +124,11 @@ slack + gitlab.
     [[docs/image/self_merge_1.png]]
 
     #+BEGIN_EXAMPLE
+      @slab self-merge --date -1
       @slab self-merge --date 2018-06-27
     #+END_EXAMPLE
 
-    해당 날짜에 업데이트된 merge request 중 self merge를 한 merge request를 조회한다. 생성한 사람과 머지한 사람이 같으면 self merge로 판단한다.
+    해당 날짜에 업데이트된 merge request 중 self merge를 한 merge request를 조회한다. 생성한 사람과 머지한 사람이 같으면 self merge로 판단한다. 오늘을 기준으로 한 delta days 입력도 가능하다. -1은 어제.
 
     #+BEGIN_EXAMPLE
       @slab self-merge 오종빈 ohyecloudy --date 2018-06-27

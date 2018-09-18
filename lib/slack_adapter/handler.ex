@@ -168,14 +168,16 @@ defmodule SlackAdapter.Handler do
     @slab issues %{"labels" => "foo,bar", "state" => "opened"}
     ```
 
-    `commits-without-mr` - merge request가 없는 commit을 조회합니다. author 이름을 넣으면 해당 author의 commit만 조회합니다.
+    `commits-without-mr` - merge request가 없는 commit을 조회합니다. author 이름을 넣으면 해당 author의 commit만 조회합니다. 오늘을 기준으로 한 delta days 입력도 가능합니다. -1은 어제입니다
     ```
+    @slab commits-without-mr --date -1
     @slab commits-without-mr --date 2018-06-27
     @slab commits-without-mr user1 user2 --date 2018-06-27
     ```
 
-    `self-merge` - merge request를 만든 사람과 머지한 사람이 같은 merge request를 출력합니다. author 이름을 넣으면 해당 author의 merge request만 검사합니다.
+    `self-merge` - merge request를 만든 사람과 머지한 사람이 같은 merge request를 출력합니다. author 이름을 넣으면 해당 author의 merge request만 검사합니다. 오늘을 기준으로 한 delta days 입력도 가능합니다. -1은 어제입니다
     ```
+    @slab self-merge --date -1
     @slab self-merge --date 2018-06-27
     @slab self-merge user1 user2 --date 2018-06-27
     ```
@@ -251,7 +253,7 @@ defmodule SlackAdapter.Handler do
 
     commits =
       with date when not is_nil(date) <- Keyword.get(options, :date),
-           {:ok, from_date} <- Date.from_iso8601(date),
+           {:ok, from_date} <- parse_date(date),
            to_date <- Date.add(from_date, 1) do
         Logger.info("commits-without-mr #{inspect(from_date)} ~ #{inspect(to_date)}")
 
@@ -337,7 +339,7 @@ defmodule SlackAdapter.Handler do
 
     merge_requests =
       with date when not is_nil(date) <- Keyword.get(options, :date),
-           {:ok, from_date} <- Date.from_iso8601(date),
+           {:ok, from_date} <- parse_date(date),
            to_date <- Date.add(from_date, 1) do
         Logger.info("self-merge #{inspect(from_date)} ~ #{inspect(to_date)}")
 
@@ -488,6 +490,30 @@ defmodule SlackAdapter.Handler do
         Slab.Server.stop_pipeline_watcher()
         send_message(":mag: 파이프라인 감시를 중지합니다 :mag:", channel, slack)
       end
+    end
+  end
+
+  @spec parse_date(String.t()) :: {:ok, Date.t()} | :error
+  defp parse_date(str) do
+    date =
+      with {delta, ""} <- Integer.parse(str) do
+        abs =
+          Timex.now()
+          |> Timex.Timezone.convert(Timex.Timezone.local())
+          |> DateTime.to_date()
+          |> Date.add(delta)
+
+        {:ok, abs}
+      else
+        _ -> :error
+      end
+
+    with true <- date == :error,
+         {:ok, abs} <- Date.from_iso8601(str) do
+      {:ok, abs}
+    else
+      {:error, _} -> :error
+      _ -> date
     end
   end
 end
