@@ -6,7 +6,8 @@
 
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]].
 
-** [[https://github.com/ohyecloudy/slab/compare/v1.0.2...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.3...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.2...v1.0.3][v1.0.3]]
 *** Added
     - =--date= 옵션에 오늘을 기준으로 한 delta days 입력이 가능하다. =--date -1= 옵션은 어제와 같다.
       - commits-without-mr, self-merge 명령어에 적용
