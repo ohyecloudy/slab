@@ -3,7 +3,35 @@ defmodule SlackAdapter.Handler do
   use Slack
   use HTTPoison.Base
 
-  def handle_event(message = %{type: "message", text: text, user: user}, slack, state) do
+  def handle_event(
+        %{type: "message", text: text, user: user, channel: channel},
+        slack,
+        state
+      ) do
+    handle_message(text, user, channel, slack, state)
+  end
+
+  def handle_event(%{type: "hello"}, slack, state) do
+    custom = %{name: slack.me.name, mention_str: "<@#{slack.me.id}>"}
+    Logger.info("Hello - bot name(#{custom.name}), mention_str(#{custom.mention_str})")
+    Logger.info("local time zone - #{inspect(Timex.Timezone.local())}")
+    Slab.Server.start_pipeline_watcher()
+    {:ok, put_in(state[:slab], custom)}
+  end
+
+  def handle_event(_, _, state), do: {:ok, state}
+
+  def handle_info({:message, text, attachments, channel}, _slack, state) do
+    Slack.Web.Chat.post_message(channel, text, %{
+      as_user: false,
+      token: Application.get_env(:slack, :token),
+      attachments: Poison.encode!(attachments)
+    })
+
+    {:ok, state}
+  end
+
+  defp handle_message(text, user, channel, slack, state) do
     issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
 
     issue_in_message =
@@ -26,7 +54,7 @@ defmodule SlackAdapter.Handler do
       # gitlab issue 풀어주는 건 mention 안해도 동작
       Application.get_env(:slab, :enable_poor_gitlab_issue_purling) && issue_in_message ->
         Logger.info("[purling] issue id - #{issue_in_message}")
-        post_gitlab_issue(Gitlab.issue(issue_in_message), message.channel)
+        post_gitlab_issue(Gitlab.issue(issue_in_message), channel)
 
       mention_me ->
         Logger.info(
@@ -40,11 +68,11 @@ defmodule SlackAdapter.Handler do
 
         cond do
           String.contains?(command, "ping") ->
-            send_message("pong", message.channel, slack)
+            send_message("pong", channel, slack)
 
           command == "help" ->
             Slack.Web.Chat.post_message(
-              message.channel,
+              channel,
               help(),
               %{
                 as_user: false,
@@ -56,32 +84,32 @@ defmodule SlackAdapter.Handler do
           String.contains?(command, "issues") ->
             command
             |> extract_options("issues")
-            |> process_issues(message.channel)
+            |> process_issues(channel)
 
           String.contains?(command, "commits-without-mr") ->
             command
             |> extract_options("commits-without-mr")
-            |> process_commits_without_mr(slack, message.channel)
+            |> process_commits_without_mr(slack, channel)
 
           String.contains?(command, "self-merge") ->
             command
             |> extract_options("self-merge")
-            |> process_self_merge(slack, message.channel)
+            |> process_self_merge(slack, channel)
 
           String.contains?(command, "branch-access") && master ->
             command
             |> extract_options("branch-access")
-            |> process_branch_access(message.channel)
+            |> process_branch_access(channel)
 
           String.contains?(command, "pipelines") ->
             command
             |> extract_options("pipelines")
-            |> process_pipelines(message.channel)
+            |> process_pipelines(channel)
 
           String.contains?(command, "pipeline-watcher") ->
             command
             |> extract_options("pipeline-watcher")
-            |> process_pipeline_watcher(slack, message.channel)
+            |> process_pipeline_watcher(slack, channel)
 
           true ->
             nil
@@ -90,26 +118,6 @@ defmodule SlackAdapter.Handler do
       true ->
         nil
     end
-
-    {:ok, state}
-  end
-
-  def handle_event(%{type: "hello"}, slack, state) do
-    custom = %{name: slack.me.name, mention_str: "<@#{slack.me.id}>"}
-    Logger.info("Hello - bot name(#{custom.name}), mention_str(#{custom.mention_str})")
-    Logger.info("local time zone - #{inspect(Timex.Timezone.local())}")
-    Slab.Server.start_pipeline_watcher()
-    {:ok, put_in(state[:slab], custom)}
-  end
-
-  def handle_event(_, _, state), do: {:ok, state}
-
-  def handle_info({:message, text, attachments, channel}, _slack, state) do
-    Slack.Web.Chat.post_message(channel, text, %{
-      as_user: false,
-      token: Application.get_env(:slack, :token),
-      attachments: Poison.encode!(attachments)
-    })
 
     {:ok, state}
   end
