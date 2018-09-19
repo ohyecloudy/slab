@@ -11,6 +11,22 @@ defmodule SlackAdapter.Handler do
     handle_message(text, user, channel, slack, state)
   end
 
+  def handle_event(
+        %{type: "message", bot_id: bot, channel: channel, attachments: attachments},
+        slack,
+        state
+      ) do
+    state =
+      attachments
+      |> Enum.reduce(state, fn x, state ->
+        text = Map.get(x, :pretext, nil)
+        {:ok, state} = handle_message(text, bot, channel, slack, state)
+        state
+      end)
+
+    {:ok, state}
+  end
+
   def handle_event(%{type: "hello"}, slack, state) do
     custom = %{name: slack.me.name, mention_str: "<@#{slack.me.id}>"}
     Logger.info("Hello - bot name(#{custom.name}), mention_str(#{custom.mention_str})")
@@ -30,6 +46,8 @@ defmodule SlackAdapter.Handler do
 
     {:ok, state}
   end
+
+  defp handle_message(nil, _user, _channel, _slack, state), do: {:ok, state}
 
   defp handle_message(text, user, channel, slack, state) do
     issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
