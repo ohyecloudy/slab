@@ -6,7 +6,8 @@
 
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]].
 
-** [[https://github.com/ohyecloudy/slab/compare/v1.0.4...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.4...v1.0.5][v1.0.5]]
 *** Added
     - masters 설정을 비워 높으면 모든 유저가 master 권한을 가진다
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.3...v1.0.4][v1.0.4]]
