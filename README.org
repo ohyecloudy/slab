@@ -151,6 +151,8 @@ slack + gitlab.
     #+END_SRC
 
     =config.exs= 파일에 master 권한을 추가할 수 있다. master 권한을 가진 유저만 실행할 수 있는 명령어가 존재한다. 명령어마다 권한 설정은 지원하지 않는다.
+
+    =masters= 설정이 없으면 모든 유저가 master 권한이 필요한 명령어를 실행할 수 있다.
 *** protected branches 접근 레벨 변경
     [[docs/image/protected_branches_1.png]]
 

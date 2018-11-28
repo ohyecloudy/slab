@@ -66,7 +66,8 @@ defmodule SlackAdapter.Handler do
     # @user_name에서 @ 문자를 제거
     user_name = String.slice(Slack.Lookups.lookup_user_name(user, slack), 1..-1)
 
-    master = Enum.any?(Application.get_env(:slab, :masters), fn name -> user_name == name end)
+    master_list = Application.get_env(:slab, :masters)
+    master = master_list == nil or Enum.any?(master_list, fn name -> user_name == name end)
 
     cond do
       # gitlab issue 풀어주는 건 mention 안해도 동작
