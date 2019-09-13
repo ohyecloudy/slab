@@ -25,22 +25,19 @@ defmodule SlackAdapter.Attachments do
         }
       end
 
+    issue_state =
+      case issue["state"] do
+        "closed" -> " (closed)"
+        _ -> ""
+      end
+
     [
       Map.merge(
         %{
           fallback: "#{issue["title"]}",
           color: "#939393",
-          title: "\##{issue["iid"]} #{issue["title"]}",
-          title_link: "#{issue["web_url"]}",
-          text: "#{String.slice(issue["description"], 0..100)}",
-          fields: [
-            %{
-              title: "labels",
-              value: Enum.join(issue["labels"], ","),
-              short: false
-            }
-          ],
-          footer: "slab"
+          title: "\##{issue["iid"]} #{issue["title"]}#{issue_state}",
+          title_link: "#{issue["web_url"]}"
         },
         author
       )
