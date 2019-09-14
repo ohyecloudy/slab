@@ -57,6 +57,33 @@ defmodule SlackAdapter.Attachments do
     end)
   end
 
+  @spec from_merge_request_with_issues(map) :: [map]
+  def from_merge_request_with_issues(%{mr: mr, issues: issues}) do
+    author =
+      if mr["author"] == nil do
+        %{author_name: "작성자 없음"}
+      else
+        %{
+          author_name: mr["author"]["name"],
+          author_icon: mr["author"]["avatar_url"],
+          author_link: mr["author"]["web_url"]
+        }
+      end
+
+    [
+      Map.merge(
+        %{
+          color: "#939393",
+          title: "#{mr["target_branch"]} <- #{mr["title"]}",
+          title_link: mr["web_url"]
+        },
+        author
+      ),
+      issues
+    ] ++
+      from_issues(issues, :summary)
+  end
+
   @spec from_merge_requests([map()]) :: [map()]
   def from_merge_requests(mrs) do
     mrs

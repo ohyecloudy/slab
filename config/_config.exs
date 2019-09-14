@@ -3,7 +3,9 @@
 
 use Mix.Config
 
-config :slab, enable_poor_gitlab_issue_purling: true
+config :slab,
+  enable_poor_gitlab_issue_purling: true,
+  enable_poor_gitlab_mr_purling: true
 
 config :slab, :gitlab,
   url: "https://gitlab.com/ohyecloudy/gitlab-straw",

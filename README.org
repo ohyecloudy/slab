@@ -222,6 +222,16 @@ slack + gitlab.
     #+END_EXAMPLE
 
     파이프라인 상태 변경 감시를 수동으로 켜고 끌 수 있다.
+*** 관련 issue 정보를 같이 출력하는 merge request preview
+    [[docs/image/merge_request.png]]
+
+    gitlab merge request 링크일 경우 봇이 preview를 제공한다.
+
+    #+BEGIN_SRC elixir
+      config :slab, enable_poor_gitlab_mr_purling: true
+    #+END_SRC
+
+    =config/config.exs= 설정 파일에서 사용 여부를 결정할 수 있다.
 
 ** 참고
    - [[http://ohyecloudy.com/pnotes/archives/side-project-slab/][#side_project slab 후기 - gitlab API를 사용해 귀찮은 일을 덜어주는 slack 봇]]

@@ -51,11 +51,21 @@ defmodule SlackAdapter.Handler do
 
   defp handle_message(text, user, channel, slack, state) do
     issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
+    mr_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/merge_requests"
 
     issue_in_message =
       with {:ok, re} <- Regex.compile(Regex.escape(issue_base_url) <> "/(?<issue>\\d+)"),
            ret when not is_nil(ret) <- Regex.named_captures(re, text),
            {num, ""} <- Integer.parse(ret["issue"]) do
+        num
+      else
+        _ -> nil
+      end
+
+    mr_in_message =
+      with {:ok, re} <- Regex.compile(Regex.escape(mr_base_url) <> "/(?<mr>\\d+)"),
+           ret when not is_nil(ret) <- Regex.named_captures(re, text),
+           {num, ""} <- Integer.parse(ret["mr"]) do
         num
       else
         _ -> nil
@@ -74,6 +84,15 @@ defmodule SlackAdapter.Handler do
       Application.get_env(:slab, :enable_poor_gitlab_issue_purling) && issue_in_message ->
         Logger.info("[purling] issue id - #{issue_in_message}")
         post_gitlab_issue(Gitlab.issue(issue_in_message), channel)
+
+      # merge request 풀어주는 건 mention 안해도 동작
+      Application.get_env(:slab, :enable_poor_gitlab_mr_purling) && mr_in_message ->
+        Logger.info("[purling] mr id - #{mr_in_message}")
+
+        post_gitlab_merge_request_with_issues(
+          Gitlab.merge_request_with_related_issues(mr_in_message),
+          channel
+        )
 
       mention_me ->
         Logger.info(
@@ -173,6 +192,23 @@ defmodule SlackAdapter.Handler do
   @spec post_gitlab_issue(map(), String.t()) :: :ok
   defp post_gitlab_issue(issue, channel) do
     attachments = SlackAdapter.Attachments.from_issue(issue, :detail)
+
+    if Enum.empty?(attachments) do
+      Logger.info("[purling] skip")
+    else
+      Slack.Web.Chat.post_message(channel, "", %{
+        as_user: false,
+        token: Application.get_env(:slack, :token),
+        attachments: Poison.encode!(attachments)
+      })
+
+      Logger.info("[purling] success")
+    end
+  end
+
+  @spec post_gitlab_merge_request_with_issues(map(), String.t()) :: :ok
+  defp post_gitlab_merge_request_with_issues(mr_with_issues, channel) do
+    attachments = SlackAdapter.Attachments.from_merge_request_with_issues(mr_with_issues)
 
     if Enum.empty?(attachments) do
       Logger.info("[purling] skip")

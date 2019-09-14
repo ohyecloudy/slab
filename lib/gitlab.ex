@@ -57,6 +57,52 @@ defmodule Gitlab do
     end
   end
 
+  @spec merge_request_with_related_issues(pos_integer()) :: map()
+  def merge_request_with_related_issues(id) do
+    target_mr = merge_request(id)
+
+    related_issues =
+      find_merge_request_source(id, :mr)
+      # issue를 찾는 대상에 target merge request도 추가한다
+      |> Kernel.++([id])
+      |> Enum.uniq()
+      |> Enum.map(&find_merge_request_source(&1, :issue))
+      |> List.flatten()
+      |> Enum.uniq()
+      |> Enum.map(&issue/1)
+
+    %{mr: target_mr, issues: related_issues}
+  end
+
+  @spec find_merge_request_source(pos_integer(), atom()) :: [integer()]
+  defp find_merge_request_source(id, type) do
+    # merge request를 체리픽한 경우 source merge request를 찾아야 관련 issue 정보를 알아낼 수 있다
+    # merge request와 merge request commits의 본문을 뒤져서 source merge request id를 알아낸다.
+    [merge_request(id) | merge_request_commits(id)]
+    |> Enum.map(&find_ids(&1, type))
+    |> List.flatten()
+    |> Enum.uniq()
+  end
+
+  @spec find_ids(map, atom) :: [integer()]
+  defp find_ids(message_or_description, type) do
+    description = message_or_description["description"]
+    message = description || message_or_description["message"]
+
+    pattern =
+      case type do
+        :mr -> ~r/!(\d+)/
+        :issue -> ~r/#(\d+)/
+      end
+
+    Regex.scan(pattern, message)
+    |> Enum.map(fn
+      [_, id] -> String.to_integer(id)
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
   @spec merge_request(pos_integer()) :: map()
   def merge_request(id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
@@ -72,6 +118,14 @@ defmodule Gitlab do
     url = api_base_url <> "/merge_requests?" <> URI.encode_query(query_options)
 
     get(url)
+  end
+
+  def merge_request_commits(id) do
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    url = api_base_url <> "/merge_requests/#{id}/commits"
+
+    %{body: body} = get(url)
+    body
   end
 
   @spec merge_requests_associated_with(pos_integer()) :: list_response()
