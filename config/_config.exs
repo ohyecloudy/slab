@@ -61,7 +61,14 @@ config :slab, :aliases,
 config :slack, token: "TOKEN 여기에"
 
 config :logger,
-  backends: [:console, {LoggerFileBackend, :file_log}]
+  backends: [:console, Sentry.LoggerBackend, {LoggerFileBackend, :file_log}]
+
+config :sentry,
+  dsn: "https://public_key@app.getsentry.com/1",
+  environment_name: Mix.env(),
+  included_environments: [:dev, :prod],
+  enable_source_code_context: true,
+  root_source_code_path: File.cwd!()
 
 config :logger, :file_log,
   path: "log/slab.log",

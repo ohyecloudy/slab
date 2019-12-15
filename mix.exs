@@ -8,6 +8,7 @@ defmodule Slab.MixProject do
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       dialyzer: [ignore_warnings: ".dialyzer_ignore.exs"]
     ]
   end
@@ -20,6 +21,10 @@ defmodule Slab.MixProject do
     ]
   end
 
+  defp aliases do
+    [sentry_recompile: ["compile", "deps.compile sentry --force"]]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
@@ -27,6 +32,8 @@ defmodule Slab.MixProject do
       {:httpoison, "~> 1.1", override: true},
       {:timex, "~> 3.3"},
       {:logger_file_backend, "~> 0.0.10"},
+      {:sentry, "~> 7.2"},
+      {:jason, "~> 1.1"},
       {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false}
     ]
   end

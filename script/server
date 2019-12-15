@@ -9,4 +9,5 @@ cd "$(dirname "$0")/.."
 
 script/bootstrap
 
+mix sentry_recompile
 mix run --no-halt
