@@ -226,40 +226,7 @@ defmodule SlackAdapter.Handler do
   @spec help() :: String.t()
   defp help() do
     """
-    `issues` - gitlab issue를 조회합니다. 사용할 수 있는 옵션은 https://docs.gitlab.com/ee/api/issues.html#list-issues 참고
-    ```
-    @slab issues %{"labels" => "foo,bar", "state" => "opened"}
-    ```
-
-    `commits-without-mr` - merge request가 없는 commit을 조회합니다. author 이름을 넣으면 해당 author의 commit만 조회합니다. 오늘을 기준으로 한 delta days 입력도 가능합니다. -1은 어제입니다
-    ```
-    @slab commits-without-mr --date -1
-    @slab commits-without-mr --date 2018-06-27
-    @slab commits-without-mr user1 user2 --date 2018-06-27
-    ```
-
-    `self-merge` - merge request를 만든 사람과 머지한 사람이 같은 merge request를 출력합니다. author 이름을 넣으면 해당 author의 merge request만 검사합니다. 오늘을 기준으로 한 delta days 입력도 가능합니다. -1은 어제입니다
-    ```
-    @slab self-merge --date -1
-    @slab self-merge --date 2018-06-27
-    @slab self-merge user1 user2 --date 2018-06-27
-    ```
-
-    `branch-access` - protected branches 접근 레벨을 변경합니다. 레벨 값으로 no, developer, maintainer, admin 문자를 사용할 수 있습니다.
-    :admission_tickets: *master* 권한을 가진 유저만 실행할 수 있는 명령어 입니다.
-    ```
-    @slab branch-access --branch master --level no
-    ```
-
-    `pipelines` - pipeline 상태를 조회합니다.
-    ```
-    @slab pipelines --branch master
-    ```
-
-    `pipeline-watcher start/stop` - pipeline 상태 감시를 시작하거나 중지합니다.
-    ```
-    @slab pipeline-watcher stop
-    ```
+    https://github.com/ohyecloudy/slab/blob/master/README.org
     """
   end
 
