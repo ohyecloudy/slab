@@ -60,6 +60,11 @@ config :slab, :aliases,
 # OAuth & Permissions > Bot User OAuth Access Token
 config :slack, token: "TOKEN 여기에"
 
+# gitlab과 slack id를 튜플로 정의해 연결한다.
+# slack profile 보기에서 Copy member ID를 눌러서 id를 복사한다.
+# [{"ohyecloudy", "acbdwe"}]
+config :slab, gitlab_slack_ids: []
+
 config :logger,
   backends: [:console, Sentry.LoggerBackend, {LoggerFileBackend, :file_log}]
 

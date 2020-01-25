@@ -149,6 +149,11 @@ defmodule SlackAdapter.Handler do
             |> extract_options("pipeline-watcher")
             |> process_pipeline_watcher(slack, channel)
 
+          String.contains?(command, "due-date") ->
+            command
+            |> extract_options("due-date")
+            |> process_due_date(slack, channel)
+
           true ->
             nil
         end
@@ -523,6 +528,164 @@ defmodule SlackAdapter.Handler do
     end
   end
 
+  @spec process_due_date(String.t(), map(), String.t()) :: any()
+  def process_due_date("", _slack, channel) do
+    Application.get_env(:slab, :gitlab_slack_ids)
+    |> Enum.each(fn {gitlab_id, _} ->
+      Logger.info("due_date options - #{inspect(gitlab_id)}")
+
+      due_date_attachments(gitlab_id, active_started_milestone_ids())
+      |> message_due_dates(channel, gitlab_id)
+    end)
+  end
+
+  def process_due_date(options, _slack, channel) do
+    Logger.info("due_date options - #{inspect(options)}")
+
+    gitlab_id = options
+
+    due_date_attachments(gitlab_id, active_started_milestone_ids())
+    |> message_due_dates(channel, gitlab_id)
+  end
+
+  @spec active_started_milestone_ids() :: [integer()]
+  defp active_started_milestone_ids() do
+    today = Date.utc_today()
+
+    Gitlab.milestones(%{state: "active"})
+    |> Enum.filter(fn %{"start_date" => date} ->
+      case Date.from_iso8601(date || "") do
+        {:ok, date} -> Date.compare(today, date) in [:gt, :eq]
+        _ -> false
+      end
+    end)
+    |> Enum.map(fn %{"id" => id} -> id end)
+  end
+
+  defp message_due_dates(%{gt: [], eq: [], lt: [], need_due_dates: []}, channel, gitlab_id) do
+    Slack.Web.Chat.post_message(
+      channel,
+      "#{gitlab_id} :mailbox_with_no_mail:",
+      %{
+        as_user: false,
+        token: Application.get_env(:slack, :token)
+      }
+    )
+  end
+
+  defp message_due_dates(
+         %{gt: gt, eq: eq, lt: lt, need_due_dates: need_due_dates},
+         channel,
+         gitlab_id
+       ) do
+    Slack.Web.Chat.post_message(
+      channel,
+      "#{mention_string_from_gitlab_id(gitlab_id)} :mailbox_with_mail::bird:",
+      %{
+        as_user: false,
+        token: Application.get_env(:slack, :token)
+      }
+    )
+
+    if not Enum.empty?(gt) do
+      Slack.Web.Chat.post_message(
+        channel,
+        ":rotating_light::fallen_leaf: due date가 지났습니다. 재설정 해주세요.",
+        %{
+          as_user: false,
+          token: Application.get_env(:slack, :token),
+          attachments: Poison.encode!(gt)
+        }
+      )
+    end
+
+    if not Enum.empty?(need_due_dates) do
+      Slack.Web.Chat.post_message(
+        channel,
+        ":rotating_light::calendar: due date를 설정 안 한 이슈 목록입니다. due date를 설정하세요.",
+        %{
+          as_user: false,
+          token: Application.get_env(:slack, :token),
+          attachments: Poison.encode!(need_due_dates)
+        }
+      )
+    end
+
+    if not Enum.empty?(eq) do
+      Slack.Web.Chat.post_message(
+        channel,
+        ":star-struck:::muscle: 오늘 마감 목록입니다.",
+        %{
+          as_user: false,
+          token: Application.get_env(:slack, :token),
+          attachments: Poison.encode!(eq)
+        }
+      )
+    end
+
+    if not Enum.empty?(lt) do
+      Slack.Web.Chat.post_message(
+        channel,
+        ":woman_in_lotus_position::man_in_lotus_position: 일주일내 마감 목록입니다.",
+        %{
+          as_user: false,
+          token: Application.get_env(:slack, :token),
+          attachments: Poison.encode!(lt)
+        }
+      )
+    end
+  end
+
+  @spec due_date_attachments(String.t(), [integer]) :: map()
+  defp due_date_attachments(gitlab_id, started_milestones) do
+    today = Date.utc_today()
+
+    due_dates =
+      Gitlab.assigned_issues(gitlab_id)
+      |> Enum.map(fn %{"due_date" => date} = issue ->
+        case Date.from_iso8601(date || "") do
+          {:ok, date} -> %{issue | "due_date" => date}
+          _ -> %{issue | "due_date" => nil}
+        end
+      end)
+
+    {need_due_dates, due_dates} =
+      due_dates
+      |> Enum.split_with(fn
+        %{"due_date" => nil} -> true
+        _ -> false
+      end)
+
+    need_due_dates =
+      need_due_dates
+      |> Enum.filter(fn
+        %{"milestone" => %{"id" => id}} -> id in started_milestones
+        _ -> false
+      end)
+
+    # TODO: issue를 가져오는 단계에서 한번 가공한다
+    due_dates =
+      due_dates
+      |> Enum.group_by(&Date.compare(today, &1["due_date"]))
+
+    gt = SlackAdapter.Attachments.from_issues(due_dates[:gt] || [], :due_date)
+    eq = SlackAdapter.Attachments.from_issues(due_dates[:eq] || [], :due_date)
+
+    next_due_date = Date.add(today, 7)
+
+    lt =
+      (due_dates[:lt] || [])
+      |> Enum.filter(fn %{"due_date" => date} ->
+        Date.compare(next_due_date, date) in [:gt, :eq]
+      end)
+      |> SlackAdapter.Attachments.from_issues(:due_date)
+
+    need_due_dates =
+      SlackAdapter.Attachments.from_issues(need_due_dates, :summary, color: "#F35A00")
+
+    %{gt: gt, eq: eq, lt: lt, need_due_dates: need_due_dates}
+  end
+
   @spec parse_date(String.t()) :: {:ok, Date.t()} | :error
   defp parse_date(str) do
     date =
@@ -544,6 +707,22 @@ defmodule SlackAdapter.Handler do
     else
       {:error, _} -> :error
       _ -> date
+    end
+  end
+
+  @spec mention_string_from_gitlab_id(String.t()) :: String.t()
+  defp mention_string_from_gitlab_id(gitlab_id) do
+    slack_id =
+      Application.get_env(:slab, :gitlab_slack_ids)
+      |> Enum.find_value(fn
+        {^gitlab_id, slack_id} -> slack_id
+        _ -> nil
+      end)
+
+    if slack_id do
+      "<@#{slack_id}> "
+    else
+      ""
     end
   end
 end

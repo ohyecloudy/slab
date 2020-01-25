@@ -232,6 +232,22 @@ slack + gitlab.
     #+END_SRC
 
     =config/config.exs= 설정 파일에서 사용 여부를 결정할 수 있다.
+*** due date 이슈 정보를 slack 채널에 알림
+    [[docs/image/due_date.png]]
 
+    =@slab due-date ohyecloudy= 형식으로 gitlab username에 대한 due date 이슈 정보를 출력할 수 있고 인자를 생략해 =@slab due-date= 명령을 입력하면 =gitlab_slack_ids= 설정에 있는 모든 gitlab username에 대해 due date 이슈 정보를 출력한다.
+
+    #+begin_src elixir
+      config :slab, gitlab_slack_ids: [{"ohyecloudy", "UAWVA837B"}, ...]
+    #+end_src
+
+    =config/config.exs= 설정 파일에서 gitlab username과 slack member id를 정의해야 한다. 이 정보로 해당 slack member를 멘션해서 due date 이슈 정보를 알려준다.
+
+    출력 정보
+
+    - due date가 지난 이슈
+    - due date가 오늘인 이슈
+    - due date가 앞으로 일주일 내인 이슈
+    - 시작한 마일스톤 이슈인데, due date를 설정 안 한 이슈
 ** 참고
    - [[http://ohyecloudy.com/pnotes/archives/side-project-slab/][#side_project slab 후기 - gitlab API를 사용해 귀찮은 일을 덜어주는 slack 봇]]

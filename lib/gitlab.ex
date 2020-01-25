@@ -4,6 +4,13 @@ defmodule Gitlab do
 
   @type list_response :: %{headers: map(), body: [map()]}
 
+  @spec assigned_issues(String.t()) :: [map()]
+  def assigned_issues(username) do
+    %{body: body} = issues(%{assignee_username: username})
+
+    body
+  end
+
   @spec issue(pos_integer()) :: map()
   def issue(id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
@@ -72,6 +79,15 @@ defmodule Gitlab do
       |> Enum.map(&issue/1)
 
     %{mr: target_mr, issues: related_issues}
+  end
+
+  @spec milestones(map()) :: [map()]
+  def milestones(query_options = %{}) do
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    url = api_base_url <> "/milestones?" <> URI.encode_query(query_options)
+
+    %{body: body} = get(url, %{})
+    body
   end
 
   @spec find_merge_request_source(pos_integer(), atom()) :: [integer()]

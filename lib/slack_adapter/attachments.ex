@@ -1,10 +1,56 @@
 defmodule SlackAdapter.Attachments do
   @spec from_issues([map()], :summary) :: [map()]
-  def from_issues(issues, :summary) do
+  def from_issues(issues, method, options \\ [])
+
+  def from_issues(issues, :summary, options) do
     Enum.map(issues, fn x = %{} ->
       %{
-        color: "#939393",
+        color: options[:color] || "#939393",
         title: "\##{x["iid"]} #{x["title"]}",
+        title_link: "#{x["web_url"]}"
+      }
+    end)
+  end
+
+  @spec from_issues([map()], :due_date) :: [map()]
+  def from_issues(issues, :due_date, _options) do
+    today = Date.utc_today()
+
+    # TODO: issue를 가져오는 단계에서 한번 가공한다
+    issues
+    |> Enum.map(fn
+      %{"due_date" => %Date{}} = i ->
+        i
+
+      %{"due_date" => nil} = i ->
+        i
+
+      %{"due_date" => date} = i ->
+        case Date.from_iso8601(date) do
+          {:ok, date} -> %{i | "due_date" => date}
+          _ -> %{i | "due_date" => nil}
+        end
+    end)
+    |> Enum.map(fn x = %{} ->
+      {due, color} =
+        if d = x["due_date"] do
+          diff = Date.diff(d, today)
+
+          color =
+            cond do
+              diff > 0 -> "#939393"
+              diff < 0 -> "#F35A00"
+              true -> "#7CD197"
+            end
+
+          {"#{diff}(#{to_string(d)}) ", color}
+        else
+          {"", "#F35A00"}
+        end
+
+      %{
+        color: color,
+        title: "#{due}\##{x["iid"]} #{x["title"]}",
         title_link: "#{x["web_url"]}"
       }
     end)

@@ -9,6 +9,8 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...HEAD][Unrelease]]
 *** Added
     - [[https://sentry.io/][sentry]] 에러 리포팅 소프트웨어 통합
+    - =due-date= 명령어로 due date 이슈를 출력한다.
+      - 출력 항목은 due date가 지난 이슈, 오늘이 due date인 이슈, due date가 일주일 내인 이슈, 시작한 마일스톤인데 due date를 설정 안 한 이슈이다.
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...v1.0.6][v1.0.6]]
 *** Added
     - pipeline 출력을 간단하게 한다
