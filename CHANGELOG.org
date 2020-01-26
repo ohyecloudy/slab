@@ -7,6 +7,7 @@
 The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]].
 
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...HEAD][Unrelease]]
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.6...v1.0.7][v1.0.7]]
 *** Added
     - [[https://sentry.io/][sentry]] 에러 리포팅 소프트웨어 통합
     - =due-date= 명령어로 due date 이슈를 출력한다.
