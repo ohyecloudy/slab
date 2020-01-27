@@ -530,11 +530,29 @@ defmodule SlackAdapter.Handler do
 
   @spec process_due_date(String.t(), map(), String.t()) :: any()
   def process_due_date("", _slack, channel) do
+    milestones = active_started_milestones()
+
+    titles =
+      milestones
+      |> Enum.map(fn %{"title" => t} -> "`#{t}`" end)
+      |> Enum.join(",")
+
+    Slack.Web.Chat.post_message(
+      channel,
+      ":eagle: due date 이슈를 확인합니다. 대상 마일스톤은 #{titles} 입니다.",
+      %{
+        as_user: false,
+        token: Application.get_env(:slack, :token)
+      }
+    )
+
+    ids = milestones |> Enum.map(fn %{"id" => id} -> id end)
+
     Application.get_env(:slab, :gitlab_slack_ids)
     |> Enum.each(fn {gitlab_id, _} ->
       Logger.info("due_date options - #{inspect(gitlab_id)}")
 
-      due_date_attachments(gitlab_id, active_started_milestone_ids())
+      due_date_attachments(gitlab_id, ids)
       |> message_due_dates(channel, gitlab_id)
     end)
   end
@@ -544,12 +562,16 @@ defmodule SlackAdapter.Handler do
 
     gitlab_id = options
 
-    due_date_attachments(gitlab_id, active_started_milestone_ids())
+    ids =
+      active_started_milestones()
+      |> Enum.map(fn %{"id" => id} -> id end)
+
+    due_date_attachments(gitlab_id, ids)
     |> message_due_dates(channel, gitlab_id)
   end
 
-  @spec active_started_milestone_ids() :: [integer()]
-  defp active_started_milestone_ids() do
+  @spec active_started_milestones() :: [map()]
+  defp active_started_milestones() do
     today = Date.utc_today()
 
     Gitlab.milestones(%{state: "active"})
@@ -559,7 +581,6 @@ defmodule SlackAdapter.Handler do
         _ -> false
       end
     end)
-    |> Enum.map(fn %{"id" => id} -> id end)
   end
 
   defp message_due_dates(%{gt: [], eq: [], lt: [], need_due_dates: []}, channel, gitlab_id) do
