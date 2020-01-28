@@ -662,7 +662,7 @@ defmodule SlackAdapter.Handler do
     today = Date.utc_today()
 
     due_dates =
-      Gitlab.assigned_issues(gitlab_id)
+      Gitlab.opened_issues_assigned_to(gitlab_id)
       |> Enum.map(fn %{"due_date" => date} = issue ->
         case Date.from_iso8601(date || "") do
           {:ok, date} -> %{issue | "due_date" => date}

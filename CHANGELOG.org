@@ -9,6 +9,8 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...HEAD][Unrelease]]
 *** Added
     - =due-date= 명령어 응답시 검사 대상 마일스톤을 표시한다
+*** Fixed
+    - =due-date= 명령 실행시 닫힌 이슈를 검색하는 버그 고침
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.6...v1.0.7][v1.0.7]]
 *** Added
     - [[https://sentry.io/][sentry]] 에러 리포팅 소프트웨어 통합

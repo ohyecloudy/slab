@@ -4,9 +4,9 @@ defmodule Gitlab do
 
   @type list_response :: %{headers: map(), body: [map()]}
 
-  @spec assigned_issues(String.t()) :: [map()]
-  def assigned_issues(username) do
-    %{body: body} = issues(%{assignee_username: username})
+  @spec opened_issues_assigned_to(String.t()) :: [map()]
+  def opened_issues_assigned_to(username) do
+    %{body: body} = issues(%{assignee_username: username, state: "opened"})
 
     body
   end
