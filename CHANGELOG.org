@@ -4,47 +4,78 @@
 #+AUTHOR: Jongbin Oh
 #+EMAIL: ohyecloudy@gmail.com
 
-The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]].
-
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...HEAD][Unrelease]]
-*** Added
+
+*** :star: Added
+
     - =due-date= 명령어 응답시 검사 대상 마일스톤을 표시한다
-*** Fixed
+
+*** :bug: Fixed
+
     - =due-date= 명령 실행시 닫힌 이슈를 검색하는 버그 고침
+
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.6...v1.0.7][v1.0.7]]
-*** Added
+
+*** :star: Added
+
     - [[https://sentry.io/][sentry]] 에러 리포팅 소프트웨어 통합
     - =due-date= 명령어로 due date 이슈를 출력한다.
       - 출력 항목은 due date가 지난 이슈, 오늘이 due date인 이슈, due date가 일주일 내인 이슈, 시작한 마일스톤인데 due date를 설정 안 한 이슈이다.
+
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...v1.0.6][v1.0.6]]
-*** Added
+
+*** :star: Added
+
     - pipeline 출력을 간단하게 한다
     - issue 출력을 간단하게 하고 closed 상태를 표시한다
     - merge request url을 입력하면 merge request 정보와 관련 issue 정보를 출력한다
+
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.4...v1.0.5][v1.0.5]]
-*** Added
+
+*** :star: Added
     - masters 설정을 비워 높으면 모든 유저가 master 권한을 가진다
+
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.3...v1.0.4][v1.0.4]]
-*** Added
+
+*** :star: Added
+
     - 다른 봇이 입력한 메시지에도 반응한다
+
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.2...v1.0.3][v1.0.3]]
-*** Added
+
+*** :star: Added
+
     - =--date= 옵션에 오늘을 기준으로 한 delta days 입력이 가능하다. =--date -1= 옵션은 어제와 같다.
       - commits-without-mr, self-merge 명령어에 적용
-*** Fixed
+
+*** :bug: Fixed
+
     - 파이프라인이 연속으로 100번 이상 실패해도 상태를 제대로 가져올 수 있다
+
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.1...v1.0.2][v1.0.2]]
-*** Added
+
+*** :star: Added
+
     - docker로 서버를 실행할 때, timezone을 설정할 수 있다.
-*** Fixed
+
+*** :bug: Fixed
+
     - 빌드에 필요한 rebar를 설치해 docker-server 명령이 실패하는 결함 제거
+
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.0...v1.0.1][v1.0.1]]
-*** Added
+
+*** :star: Added
+
     - 파이프라인 상태(fixed, success, failed, still failing) 알림 여부를 config로 설정할 수 있다
-*** Fixed
+
+*** :bug: Fixed
+
     - 특정 날짜 self merge 조회가 되지 않는 결함을 제거
+
 ** [[https://github.com/ohyecloudy/slab/compare/aae4f83786...v1.0.0][v1.0.0]]
-*** Added
+
+*** :star: Added
+
     - poor link purling
     - issues 옵션으로 gitlab issue를 조회할 수 있다
     - issues 조회 시 20개가 넘어가면 결과물에서 pagination 안내
@@ -58,3 +89,8 @@ The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]
     - config에서 파이프라인 상태 변경 통보를 설정할 수 있다
     - pipeline-watcher 커맨드로 파이프라인 상태 변경 감시를 켜고 끌 수 있다
     - self-merge 커맨드로 셀프 머지한 merge request를 조회할 수 있다
+
+** References
+
+   - [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]]
+   - [[https://get.todoist.help/hc/en-us/articles/115005442125-Web-application][Todoist for Web Changelog]]
