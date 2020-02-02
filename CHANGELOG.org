@@ -4,6 +4,20 @@
 #+AUTHOR: Jongbin Oh
 #+EMAIL: ohyecloudy@gmail.com
 
+#+BEGIN_COMMENT
+태그를 추가한 후, github에서 지원하는 URL로 태그 사이 변경 사항을 볼 수 있다.
+- https://github.com/ohyecloudy/PROJECT_NAME/compare/v1.0.0...v1.0.1
+- https://github.com/ohyecloudy/PROJECT_NAME/compare/v1.0.1...HEAD
+
+분류
+- :star: Added
+- :gear: Changed
+- :bug: Fixed
+- :fire: Removed
+- :comet: Deprecated
+- :lock: Security
+#+END_COMMENT
+
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...HEAD][Unrelease]]
 
 *** :star: Added
