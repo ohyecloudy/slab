@@ -232,10 +232,16 @@ slack + gitlab.
     #+END_SRC
 
     =config/config.exs= 설정 파일에서 사용 여부를 결정할 수 있다.
-*** due date 이슈 정보를 slack 채널에 알림
-    [[docs/image/due_date.png]]
+*** due date 이슈 정보를 DM(direct Message)으로 멤버들에게 알림
+    [[docs/image/due_date_1.png]]
 
-    =@slab due-date ohyecloudy= 형식으로 gitlab username에 대한 due date 이슈 정보를 출력할 수 있고 인자를 생략해 =@slab due-date= 명령을 입력하면 =gitlab_slack_ids= 설정에 있는 모든 gitlab username에 대해 due date 이슈 정보를 출력한다.
+    채널에는 멤버를 멘션하지 않고 gitlab id와 due date 이슈를 출력한다.
+
+    [[docs/image/due_date_2.png]]
+
+    DM으로 멤버에게 상세하게 due date 이슈를 알려준다.
+
+    =@slab due-date= 명령을 입력하면 =gitlab_slack_ids= 설정에 있는 모든 gitlab username에 대해 due date 이슈 정보를 출력한다.
 
     #+begin_src elixir
       config :slab, gitlab_slack_ids: [{"ohyecloudy", "UAWVA837B"}, ...]

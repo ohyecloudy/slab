@@ -24,6 +24,10 @@
 
     - =due-date= 명령어 응답시 검사 대상 마일스톤을 표시한다
 
+*** :gear: Changed
+
+    - =due-date= 명령어 결과를 각 멤버에게 DM으로 전송한다
+
 *** :bug: Fixed
 
     - =due-date= 명령 실행시 닫힌 이슈를 검색하는 버그 고침
