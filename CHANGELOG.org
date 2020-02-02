@@ -20,6 +20,8 @@
 
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.5...HEAD][Unrelease]]
 
+** [[https://github.com/ohyecloudy/slab/compare/v1.0.7...v1.0.8][v1.0.8]]
+
 *** :star: Added
 
     - =due-date= 명령어 응답시 검사 대상 마일스톤을 표시한다
