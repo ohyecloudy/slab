@@ -1,0 +1,30 @@
+version: '3'
+services:
+  slab:
+    build:
+      context: ..
+      dockerfile: script/Dockerfile-slab
+    environment:
+    -  TZ=Asia/Seoul
+    ports:
+    - "8081:8081"
+  prometheus:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-prometheus
+    ports:
+    - "9090:9090"
+    depends_on:
+    - slab
+    volumes:
+    - prometheus-data:/prometheus
+  grafana:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-grafana
+    ports:
+    - "3000:3000"
+    depends_on:
+    - prometheus
+volumes:
+  prometheus-data:

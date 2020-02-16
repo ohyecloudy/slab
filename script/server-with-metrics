@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+cd "$(dirname "$0")"
+
+echo "==> Stopping a docker compose..."
+docker-compose down
+
+echo "==> Running a docker compose..."
+docker-compose up --build -d

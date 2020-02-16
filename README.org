@@ -43,6 +43,14 @@ slack + gitlab.
 
     인자는 [[https://en.wikipedia.org/wiki/List_of_tz_database_time_zones][List of tz database time zones]]를 참고한다.
 
+*** prometheus, grafana와 같이 실행
+
+    #+BEGIN_EXAMPLE
+      $ script/server-with-metrics
+    #+END_EXAMPLE
+
+    실행 후 [[http://localhost:3000/]] 주소를 방문하면 grafana를 확인할 수 있다.
+
 *** vagrant로 실행
     #+BEGIN_EXAMPLE
       $ vagrant up
