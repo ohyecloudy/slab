@@ -34,7 +34,8 @@ defmodule Slab.MixProject do
       {:logger_file_backend, "~> 0.0.10"},
       {:sentry, "~> 7.2"},
       {:jason, "~> 1.1"},
-      {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false},
+      {:prometheus_httpd, "~> 2.1"}
     ]
   end
 end
