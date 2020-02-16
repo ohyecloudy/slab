@@ -199,12 +199,21 @@ defmodule Gitlab do
 
     Logger.info("GET - #{url}")
 
-    with {:ok, %HTTPoison.Response{status_code: 200, headers: headers, body: body}} <-
-           HTTPoison.get(
-             url,
-             ["Private-Token": "#{access_token}"],
-             timeout: timeout
-           ),
+    {microseconds, result} =
+      :timer.tc(fn ->
+        HTTPoison.get(
+          url,
+          ["Private-Token": "#{access_token}"],
+          timeout: timeout
+        )
+      end)
+
+    :telemetry.execute(
+      [:gitlab, :request, :get, :duration],
+      %{duration: div(microseconds, 1000)}
+    )
+
+    with {:ok, %HTTPoison.Response{status_code: 200, headers: headers, body: body}} <- result,
          {:ok, body} <- Poison.decode(body) do
       %{headers: Map.new(headers), body: body}
     else
