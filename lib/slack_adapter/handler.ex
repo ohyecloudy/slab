@@ -213,7 +213,9 @@ defmodule SlackAdapter.Handler do
 
   @spec post_gitlab_merge_request_with_issues(map(), String.t()) :: :ok
   defp post_gitlab_merge_request_with_issues(mr_with_issues, channel) do
-    attachments = SlackAdapter.Attachments.from_merge_request_with_issues(mr_with_issues)
+    attachments =
+      SlackAdapter.Attachments.from_merge_request_with_issues(mr_with_issues) ++
+        SlackAdapter.Attachments.from_merge_request_changes(mr_with_issues.mr)
 
     if Enum.empty?(attachments) do
       Logger.info("[purling] skip")

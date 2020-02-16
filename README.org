@@ -232,6 +232,19 @@ slack + gitlab.
     #+END_SRC
 
     =config/config.exs= 설정 파일에서 사용 여부를 결정할 수 있다.
+
+    #+begin_src elixir
+      config :slab,
+        merge_request_filename_descriptor: fn path ->
+          case Path.basename(path) do
+            "Dockerfile" -> ":whale:"
+            _ -> nil
+          end
+        end
+    #+end_src
+
+    =config/config.exs= 설정으로 변경된 파일에 대한 설명을 넣을 수 있다.
+
 *** due date 이슈 정보를 DM(direct Message)으로 멤버들에게 알림
     [[docs/image/due_date_1.png]]
 

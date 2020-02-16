@@ -103,6 +103,22 @@ defmodule SlackAdapter.Attachments do
     end)
   end
 
+  def from_merge_request_changes(%{"changes" => changes}) when is_list(changes) do
+    descriptor = Application.get_env(:slab, :merge_request_filename_descriptor) || fn _ -> nil end
+
+    changes
+    |> Enum.flat_map(fn
+      %{"new_path" => new_path, "old_path" => old_path} -> [new_path, old_path]
+      _ -> []
+    end)
+    |> Enum.uniq()
+    |> Enum.map(fn path -> {path, descriptor.(path)} end)
+    |> Enum.reject(&is_nil(elem(&1, 1)))
+    |> Enum.map(fn {path, description} ->
+      %{color: "#939393", text: "#{description} - #{path}"}
+    end)
+  end
+
   @spec from_merge_request_with_issues(map) :: [map]
   def from_merge_request_with_issues(%{mr: mr, issues: issues}) do
     author =

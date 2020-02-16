@@ -53,6 +53,15 @@ config :slab, :pipeline_watcher,
 #     end
 #   end
 
+# merge request 프리뷰를 출력할 때, 파일 이름을 입력으로 받아 메시지를 출력할 수 있다
+# config :slab,
+#   merge_request_filename_descriptor: fn path ->
+#     case Path.basename(path) do
+#       "Dockerfile" -> ":whale:"
+#       _ -> nil
+#     end
+#   end
+
 config :slab, :aliases,
   열린이슈!: "issues %{\"state\" => \"opened\"}",
   닫힌이슈!: "issues %{\"state\" => \"closed\"}"

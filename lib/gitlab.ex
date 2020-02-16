@@ -66,7 +66,7 @@ defmodule Gitlab do
 
   @spec merge_request_with_related_issues(pos_integer()) :: map()
   def merge_request_with_related_issues(id) do
-    target_mr = merge_request(id)
+    target_mr = merge_request_changes(id)
 
     related_issues =
       find_merge_request_source(id, :mr)
@@ -139,6 +139,14 @@ defmodule Gitlab do
   def merge_request_commits(id) do
     api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
     url = api_base_url <> "/merge_requests/#{id}/commits"
+
+    %{body: body} = get(url)
+    body
+  end
+
+  def merge_request_changes(id) do
+    api_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :api_base_url)
+    url = api_base_url <> "/merge_requests/#{id}/changes"
 
     %{body: body} = get(url)
     body
