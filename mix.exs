@@ -35,6 +35,7 @@ defmodule Slab.MixProject do
       {:sentry, "~> 7.2"},
       {:jason, "~> 1.1"},
       {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false},
+      {:telemetry, "~> 0.4.1"},
       {:prometheus_ex, "~> 3.0"},
       {:prometheus_httpd, "~> 2.1"},
       {:prometheus_process_collector, "~> 1.4"}

@@ -27,6 +27,7 @@
     - prometheus, grafana로 지표(metrics)를 확인할 수 있다
       + =script/server-with-metrics= 스크립트로 실행
       + [[http://localhost:3000]] 사이트 방문
+    - slack input 지표를 grafana에서 볼 수 있게 추가
 
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.7...v1.0.8][v1.0.8]]
 

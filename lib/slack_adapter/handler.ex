@@ -47,7 +47,10 @@ defmodule SlackAdapter.Handler do
     {:ok, state}
   end
 
-  defp handle_message(nil, _user, _channel, _slack, state), do: {:ok, state}
+  defp handle_message(nil, _user, _channel, _slack, state) do
+    :telemetry.execute([:slack, :input, :other], %{count: 1})
+    {:ok, state}
+  end
 
   defp handle_message(text, user, channel, slack, state) do
     issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
@@ -83,11 +86,13 @@ defmodule SlackAdapter.Handler do
       # gitlab issue 풀어주는 건 mention 안해도 동작
       Application.get_env(:slab, :enable_poor_gitlab_issue_purling) && issue_in_message ->
         Logger.info("[purling] issue id - #{issue_in_message}")
+        :telemetry.execute([:slack, :input, :preview_issue], %{count: 1})
         post_gitlab_issue(Gitlab.issue(issue_in_message), channel)
 
       # merge request 풀어주는 건 mention 안해도 동작
       Application.get_env(:slab, :enable_poor_gitlab_mr_purling) && mr_in_message ->
         Logger.info("[purling] mr id - #{mr_in_message}")
+        :telemetry.execute([:slack, :input, :preview_merge_request], %{count: 1})
 
         post_gitlab_merge_request_with_issues(
           Gitlab.merge_request_with_related_issues(mr_in_message),
@@ -106,9 +111,12 @@ defmodule SlackAdapter.Handler do
 
         cond do
           String.contains?(command, "ping") ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
             send_message("pong", channel, slack)
 
           command == "help" ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
+
             Slack.Web.Chat.post_message(
               channel,
               help(),
@@ -120,45 +128,61 @@ defmodule SlackAdapter.Handler do
             )
 
           String.contains?(command, "issues") ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
+
             command
             |> extract_options("issues")
             |> process_issues(channel)
 
           String.contains?(command, "commits-without-mr") ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
+
             command
             |> extract_options("commits-without-mr")
             |> process_commits_without_mr(slack, channel)
 
           String.contains?(command, "self-merge") ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
+
             command
             |> extract_options("self-merge")
             |> process_self_merge(slack, channel)
 
           String.contains?(command, "branch-access") && master ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
+
             command
             |> extract_options("branch-access")
             |> process_branch_access(channel)
 
           String.contains?(command, "pipelines") ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
+
             command
             |> extract_options("pipelines")
             |> process_pipelines(channel)
 
           String.contains?(command, "pipeline-watcher") ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
+
             command
             |> extract_options("pipeline-watcher")
             |> process_pipeline_watcher(slack, channel)
 
           String.contains?(command, "due-date") ->
+            :telemetry.execute([:slack, :input, :command], %{count: 1})
+
             command
             |> extract_options("due-date")
             |> process_due_date(slack, channel)
 
           true ->
+            :telemetry.execute([:slack, :input, :other], %{count: 1})
             nil
         end
 
       true ->
+        :telemetry.execute([:slack, :input, :other], %{count: 1})
         nil
     end
 
