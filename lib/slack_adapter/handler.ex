@@ -54,7 +54,6 @@ defmodule SlackAdapter.Handler do
 
   defp handle_message(text, user, channel, slack, state) do
     issue_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/issues"
-    mr_base_url = Keyword.get(Application.get_env(:slab, :gitlab), :url) <> "/merge_requests"
 
     issue_in_message =
       with {:ok, re} <- Regex.compile(Regex.escape(issue_base_url) <> "/(?<issue>\\d+)"),
@@ -66,7 +65,11 @@ defmodule SlackAdapter.Handler do
       end
 
     mr_in_message =
-      with {:ok, re} <- Regex.compile(Regex.escape(mr_base_url) <> "/(?<mr>\\d+)"),
+      with {:ok, re} <-
+             Regex.compile(
+               Regex.escape(Keyword.get(Application.get_env(:slab, :gitlab), :url)) <>
+                 "(/-)?/merge_requests/(?<mr>\\d+)"
+             ),
            ret when not is_nil(ret) <- Regex.named_captures(re, text),
            {num, ""} <- Integer.parse(ret["mr"]) do
         num
