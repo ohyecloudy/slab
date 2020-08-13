@@ -30,6 +30,7 @@
     - slack input 지표를 grafana에서 볼 수 있게 추가
     - gitlab request 지표를 grafana에서 볼 수 있게 추가
     - merge request 주소에 /- 경로가 들어가도 preview를 보여준다
+    - issue 주소에 /- 경로가 들어가도 preview를 보여준다
 
 ** [[https://github.com/ohyecloudy/slab/compare/v1.0.7...v1.0.8][v1.0.8]]
 
